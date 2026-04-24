@@ -31,7 +31,7 @@ interface Profile {
 function MessagesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const targetUserId = searchParams.get('user')
+  const targetUserId = searchParams?.get('user') ?? null
 
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])

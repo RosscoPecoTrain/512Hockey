@@ -16,10 +16,14 @@ export default function Navbar() {
   const pathname = usePathname()
 
   // Close menu on route change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'))
+    // Read dark mode preference from DOM on mount (set by inline script)
+    const dark = document.documentElement.classList.contains('dark')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsDark(dark)
   }, [])
 
   const toggleDark = () => {
