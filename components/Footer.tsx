@@ -26,7 +26,7 @@ export default function Footer() {
             </p>
           </div>
         </div>
-        <div className="border-t border-[#4fc3f7] mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t border-[#4fc3f7] mt-8 pt-8 text-center text-gray-400 dark:text-[#8b949e]">
           <p>&copy; {new Date().getFullYear()} 512Hockey.com. All rights reserved.</p>
         </div>
       </div>

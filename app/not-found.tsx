@@ -11,7 +11,7 @@ export default function NotFound() {
         <p className="text-xl text-gray-300 mb-8">This page went off-piste.</p>
         <Link
           href="/"
-          className="bg-[#4fc3f7] text-[#0a1628] px-8 py-3 rounded-lg font-semibold hover:bg-white transition"
+          className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-8 py-3 rounded-lg font-semibold hover:bg-white transition"
         >
           Back to 512Hockey.com
         </Link>

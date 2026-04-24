@@ -24,7 +24,7 @@ export default function AuthButton({ user }: AuthButtonProps) {
     return (
       <Link
         href="/auth/signin"
-        className="bg-[#4fc3f7] text-[#0a1628] px-4 py-2 rounded font-semibold hover:bg-white transition"
+        className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-2 rounded font-semibold hover:bg-white transition"
       >
         Sign In
       </Link>
@@ -37,22 +37,22 @@ export default function AuthButton({ user }: AuthButtonProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 hover:text-[#4fc3f7] transition"
       >
-        <div className="w-8 h-8 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] font-semibold">
+        <div className="w-8 h-8 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-semibold">
           {user.email?.charAt(0).toUpperCase()}
         </div>
       </button>
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[#0a1628] border border-[#4fc3f7] rounded shadow-lg z-10">
+        <div className="absolute right-0 mt-2 w-48 bg-[#0a1628] border border-[#4fc3f7] rounded shadow-lg dark:shadow-none z-10">
           <Link
             href="/profile"
-            className="block px-4 py-2 hover:bg-[#4fc3f7] hover:text-[#0a1628] transition"
+            className="block px-4 py-2 hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition"
             onClick={() => setIsOpen(false)}
           >
             My Profile
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 hover:bg-[#4fc3f7] hover:text-[#0a1628] transition"
+            className="w-full text-left px-4 py-2 hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition"
           >
             Sign Out
           </button>

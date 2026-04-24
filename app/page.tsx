@@ -41,13 +41,13 @@ export default function Home() {
                 <>
                   <Link
                     href="/directory"
-                    className="bg-[#4fc3f7] text-[#0a1628] px-8 py-3 rounded font-semibold hover:bg-white transition"
+                    className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-8 py-3 rounded font-semibold hover:bg-white transition"
                   >
                     Find Players
                   </Link>
                   <Link
                     href="/forum"
-                    className="bg-transparent border-2 border-[#4fc3f7] text-[#4fc3f7] px-8 py-3 rounded font-semibold hover:bg-[#4fc3f7] hover:text-[#0a1628] transition"
+                    className="bg-transparent border-2 border-[#4fc3f7] text-[#4fc3f7] px-8 py-3 rounded font-semibold hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition"
                   >
                     Join Forum
                   </Link>
@@ -55,7 +55,7 @@ export default function Home() {
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="bg-[#4fc3f7] text-[#0a1628] px-8 py-3 rounded font-semibold hover:bg-white transition"
+                  className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-8 py-3 rounded font-semibold hover:bg-white transition"
                 >
                   Get Started
                 </Link>
@@ -68,50 +68,50 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-12 text-[#0a1628]">
+          <h2 className="text-4xl font-bold text-center mb-12 text-[#0a1628] dark:text-[#e6edf3]">
             What We Offer
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Player Directory */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg transition">
+            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
               <div className="text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628]">
+              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
                 Player Directory
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-[#8b949e]">
                 Browse hockey players in Austin. Find teammates, rivals, and connect with the community.
               </p>
             </div>
 
             {/* Community Forum */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg transition">
+            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
               <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628]">
+              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
                 Community Forum
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-[#8b949e]">
                 Discuss games, share strategies, and organize pickup games with other players.
               </p>
             </div>
 
             {/* In-App Messaging */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg transition">
+            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
               <div className="text-4xl mb-4">💌</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628]">
+              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
                 Direct Messaging
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-[#8b949e]">
                 Send private messages to other players. Coordinate games and build friendships.
               </p>
             </div>
 
             {/* Rink Finder */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg transition">
+            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
               <div className="text-4xl mb-4">🏟️</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628]">
+              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
                 Find Rinks
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-[#8b949e]">
                 Discover Austin&apos;s best ice rinks, view hours, and book ice time online.
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function Home() {
           {!user && (
             <Link
               href="/auth/signin"
-              className="inline-block bg-[#4fc3f7] text-[#0a1628] px-8 py-3 rounded font-semibold hover:bg-white transition"
+              className="inline-block bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-8 py-3 rounded font-semibold hover:bg-white transition"
             >
               Sign Up Now
             </Link>

@@ -75,7 +75,7 @@ export default function AdminPanel() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Admin Access Required</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-[#8b949e] mb-6">
             You need to sign in with an admin account to access this panel.
           </p>
         </div>
@@ -85,24 +85,24 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-8 text-[#0a1628]">Admin Panel</h1>
+      <h1 className="text-4xl font-bold mb-8 text-[#0a1628] dark:text-[#e6edf3]">Admin Panel</h1>
 
       {/* Moderation Queue */}
-      <div className="bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold mb-6 text-[#0a1628]">
+      <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-8">
+        <h2 className="text-2xl font-bold mb-6 text-[#0a1628] dark:text-[#e6edf3]">
           Pending Posts ({pendingPosts.length})
         </h2>
 
         {isLoading ? (
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 dark:text-[#8b949e]">Loading...</p>
         ) : pendingPosts.length === 0 ? (
-          <p className="text-gray-600">No pending posts. All moderation is up to date!</p>
+          <p className="text-gray-600 dark:text-[#8b949e]">No pending posts. All moderation is up to date!</p>
         ) : (
           <div className="space-y-6">
             {pendingPosts.map((post) => (
-              <div key={post.id} className="border border-gray-200 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-[#0a1628] mb-2">{post.title}</h3>
-                <p className="text-gray-700 mb-4">{post.content}</p>
+              <div key={post.id} className="border border-gray-200 dark:border-[#30363d] rounded-lg p-6">
+                <h3 className="text-xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-2">{post.title}</h3>
+                <p className="text-gray-700 dark:text-[#e6edf3] mb-4">{post.content}</p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleApprove(post.id)}
@@ -125,16 +125,16 @@ export default function AdminPanel() {
 
       {/* Additional Admin Stats (placeholder) */}
       <div className="grid md:grid-cols-3 gap-6 mt-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">TOTAL USERS</h3>
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-6">
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-[#8b949e] mb-2">TOTAL USERS</h3>
           <p className="text-4xl font-bold text-[#4fc3f7]">0</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">FORUM POSTS</h3>
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-6">
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-[#8b949e] mb-2">FORUM POSTS</h3>
           <p className="text-4xl font-bold text-[#4fc3f7]">0</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-semibold text-gray-600 mb-2">PENDING MODERATION</h3>
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-6">
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-[#8b949e] mb-2">PENDING MODERATION</h3>
           <p className="text-4xl font-bold text-[#4fc3f7]">{pendingPosts.length}</p>
         </div>
       </div>

@@ -109,7 +109,7 @@ export default function ForumPostPage() {
     }
   }
 
-  if (isLoading) return <div className="max-w-4xl mx-auto px-4 py-12"><p className="text-gray-600">Loading...</p></div>
+  if (isLoading) return <div className="max-w-4xl mx-auto px-4 py-12"><p className="text-gray-600 dark:text-[#8b949e]">Loading...</p></div>
   if (!post) return null
 
   return (
@@ -117,34 +117,34 @@ export default function ForumPostPage() {
       <Link href="/forum" className="text-[#4fc3f7] hover:underline mb-6 inline-block">← Back to Forum</Link>
 
       {/* Post */}
-      <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+      <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-lg dark:shadow-none p-8 mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <span className="bg-[#4fc3f7] text-[#0a1628] text-xs px-2 py-1 rounded font-medium">{post.category}</span>
+          <span className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] text-xs px-2 py-1 rounded font-medium">{post.category}</span>
           {post.pinned && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Pinned</span>}
         </div>
-        <h1 className="text-3xl font-bold text-[#0a1628] mb-4">{post.title}</h1>
-        <p className="text-gray-600 text-sm mb-6">
+        <h1 className="text-3xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-4">{post.title}</h1>
+        <p className="text-gray-600 dark:text-[#8b949e] text-sm mb-6">
           Posted by <span className="font-medium">{author?.full_name || author?.email || 'Unknown'}</span>
           {' · '}{new Date(post.created_at).toLocaleDateString()}
         </p>
-        <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{post.content}</div>
+        <div className="prose max-w-none text-gray-700 dark:text-[#e6edf3] whitespace-pre-wrap">{post.content}</div>
       </div>
 
       {/* Replies */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-[#0a1628] mb-6">
+        <h2 className="text-2xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-6">
           {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
         </h2>
         <div className="space-y-4">
           {replies.map(reply => (
-            <div key={reply.id} className="bg-white rounded-lg border border-gray-200 p-6">
-              <p className="text-sm text-gray-500 mb-3">
-                <span className="font-medium text-[#0a1628]">
+            <div key={reply.id} className="bg-white dark:bg-[#161b22] rounded-lg border border-gray-200 dark:border-[#30363d] p-6">
+              <p className="text-sm text-gray-500 dark:text-[#8b949e] mb-3">
+                <span className="font-medium text-[#0a1628] dark:text-[#e6edf3]">
                   {reply.profiles?.full_name || reply.profiles?.email || 'Unknown'}
                 </span>
                 {' · '}{new Date(reply.created_at).toLocaleDateString()}
               </p>
-              <p className="text-gray-700 whitespace-pre-wrap">{reply.content}</p>
+              <p className="text-gray-700 dark:text-[#e6edf3] whitespace-pre-wrap">{reply.content}</p>
             </div>
           ))}
         </div>
@@ -152,8 +152,8 @@ export default function ForumPostPage() {
 
       {/* Reply Form */}
       {user ? (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-bold text-[#0a1628] mb-4">Leave a Reply</h3>
+        <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-6">
+          <h3 className="text-xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-4">Leave a Reply</h3>
           <form onSubmit={handleReply}>
             <textarea
               required
@@ -161,21 +161,21 @@ export default function ForumPostPage() {
               value={replyContent}
               onChange={e => setReplyContent(e.target.value)}
               placeholder="Write your reply..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] mb-4"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] mb-4"
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded-lg font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
+              className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded-lg font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
             >
               {isSubmitting ? 'Posting...' : 'Post Reply'}
             </button>
           </form>
         </div>
       ) : (
-        <div className="bg-gray-50 rounded-lg p-6 text-center">
-          <p className="text-gray-600 mb-4">Sign in to reply to this post</p>
-          <Link href="/auth/signin" className="bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded font-semibold">
+        <div className="bg-gray-50 dark:bg-[#0d1117] rounded-lg p-6 text-center">
+          <p className="text-gray-600 dark:text-[#8b949e] mb-4">Sign in to reply to this post</p>
+          <Link href="/auth/signin" className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded font-semibold">
             Sign In
           </Link>
         </div>

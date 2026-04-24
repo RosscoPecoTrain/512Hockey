@@ -28,7 +28,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${geistMono.variable} bg-white text-gray-900`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}` }} />
+      </head>
+      <body className={`${geist.variable} ${geistMono.variable} bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] transition-colors`}>
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />

@@ -50,7 +50,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-gray-600">Loading profile...</p>
+        <p className="text-gray-600 dark:text-[#8b949e]">Loading profile...</p>
       </div>
     )
   }
@@ -58,7 +58,7 @@ export default function ProfilePage() {
   if (error || !profile) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-gray-600">Profile not found</p>
+        <p className="text-gray-600 dark:text-[#8b949e]">Profile not found</p>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
     )
@@ -66,11 +66,11 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-lg dark:shadow-none overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#0a1628] to-[#1a2f4a] text-white p-8">
           <div className="flex items-start gap-8 flex-wrap">
-            <div className="w-24 h-24 bg-[#4fc3f7] rounded-full flex items-center justify-center text-4xl font-bold text-[#0a1628]">
+            <div className="w-24 h-24 bg-[#4fc3f7] rounded-full flex items-center justify-center text-4xl font-bold text-[#0a1628] dark:text-[#e6edf3]">
               {profile.full_name?.charAt(0)?.toUpperCase() ?? '?'}
             </div>
             <div className="flex-1">
@@ -87,7 +87,7 @@ export default function ProfilePage() {
             {currentUser && currentUser.id === id && (
               <Link
                 href="/profile"
-                className="bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded font-semibold hover:bg-white transition"
+                className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded font-semibold hover:bg-white transition"
               >
                 ✏️ Edit Profile
               </Link>
@@ -95,7 +95,7 @@ export default function ProfilePage() {
             {currentUser && currentUser.id !== id && (
               <Link
                 href={`/messages?user=${id}`}
-                className="bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded font-semibold hover:bg-white transition"
+                className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded font-semibold hover:bg-white transition"
               >
                 Send Message
               </Link>
@@ -107,18 +107,18 @@ export default function ProfilePage() {
         <div className="p-8">
           {profile.bio && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-[#0a1628] mb-4">About</h2>
-              <p className="text-gray-700 text-lg">{profile.bio}</p>
+              <h2 className="text-2xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-4">About</h2>
+              <p className="text-gray-700 dark:text-[#e6edf3] text-lg">{profile.bio}</p>
             </div>
           )}
 
           <div className="grid md:grid-cols-2 gap-8">
             {profile.leagues && profile.leagues.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold text-[#0a1628] mb-4">Leagues</h3>
+                <h3 className="text-xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-4">Leagues</h3>
                 <div className="space-y-2">
                   {profile.leagues.map((league: string, idx: number) => (
-                    <div key={idx} className="bg-[#4fc3f7] text-[#0a1628] px-4 py-2 rounded font-medium">
+                    <div key={idx} className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-2 rounded font-medium">
                       {league}
                     </div>
                   ))}
@@ -128,10 +128,10 @@ export default function ProfilePage() {
 
             {profile.preferred_rinks && profile.preferred_rinks.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold text-[#0a1628] mb-4">Preferred Rinks</h3>
+                <h3 className="text-xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-4">Preferred Rinks</h3>
                 <div className="space-y-2">
                   {profile.preferred_rinks.map((rink: string, idx: number) => (
-                    <div key={idx} className="border border-[#4fc3f7] text-[#0a1628] px-4 py-2 rounded">
+                    <div key={idx} className="border border-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-2 rounded">
                       {rink}
                     </div>
                   ))}
@@ -140,7 +140,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="mt-8 text-sm text-gray-400">
+          <div className="mt-8 text-sm text-gray-400 dark:text-[#8b949e]">
             Member since {new Date(profile.created_at).toLocaleDateString()}
           </div>
         </div>

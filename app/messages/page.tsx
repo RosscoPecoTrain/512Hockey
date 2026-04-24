@@ -226,17 +226,17 @@ function MessagesContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-[#0a1628] mb-6">Messages</h1>
+      <h1 className="text-3xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-6">Messages</h1>
 
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden flex" style={{ height: '600px' }}>
+      <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-lg dark:shadow-none overflow-hidden flex" style={{ height: '600px' }}>
         {/* Sidebar - Conversations */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200 bg-[#0a1628]">
+        <div className="w-1/3 border-r border-gray-200 dark:border-[#30363d] flex flex-col">
+          <div className="p-4 border-b border-gray-200 dark:border-[#30363d] bg-[#0a1628]">
             <h2 className="text-white font-semibold">Conversations</h2>
           </div>
           <div className="overflow-y-auto flex-1">
             {conversations.length === 0 && !activeUserId ? (
-              <div className="p-6 text-center text-gray-500 text-sm">
+              <div className="p-6 text-center text-gray-500 dark:text-[#8b949e] text-sm">
                 <p>No conversations yet.</p>
                 <p className="mt-2">Go to the <a href="/directory" className="text-[#4fc3f7] hover:underline">Player Directory</a> to message someone!</p>
               </div>
@@ -245,22 +245,22 @@ function MessagesContent() {
                 <button
                   key={convo.userId}
                   onClick={() => setActiveUserId(convo.userId)}
-                  className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition ${activeUserId === convo.userId ? 'bg-blue-50 border-l-4 border-l-[#4fc3f7]' : ''}`}
+                  className={`w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] hover:bg-gray-50 dark:bg-[#0d1117] transition ${activeUserId === convo.userId ? 'bg-blue-50 border-l-4 border-l-[#4fc3f7]' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] font-bold flex-shrink-0">
+                    <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold flex-shrink-0">
                       {convo.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center">
-                        <p className="font-semibold text-[#0a1628] truncate">{convo.name}</p>
+                        <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3] truncate">{convo.name}</p>
                         {convo.unread > 0 && (
-                          <span className="bg-[#4fc3f7] text-[#0a1628] text-xs rounded-full px-2 py-0.5 font-bold ml-1">
+                          <span className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] text-xs rounded-full px-2 py-0.5 font-bold ml-1">
                             {convo.unread}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 truncate">{convo.lastMessage}</p>
+                      <p className="text-sm text-gray-500 dark:text-[#8b949e] truncate">{convo.lastMessage}</p>
                     </div>
                   </div>
                 </button>
@@ -268,14 +268,14 @@ function MessagesContent() {
             )}
             {/* Show active user even if no prior messages */}
             {activeUserId && !conversations.find(c => c.userId === activeUserId) && activeProfile && (
-              <button className="w-full text-left p-4 border-b border-gray-100 bg-blue-50 border-l-4 border-l-[#4fc3f7]">
+              <button className="w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] bg-blue-50 border-l-4 border-l-[#4fc3f7]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] font-bold">
+                  <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold">
                     {(activeProfile.full_name || activeProfile.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-[#0a1628]">{activeProfile.full_name || activeProfile.email}</p>
-                    <p className="text-sm text-gray-500">New conversation</p>
+                    <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3]">{activeProfile.full_name || activeProfile.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-[#8b949e]">New conversation</p>
                   </div>
                 </div>
               </button>
@@ -288,12 +288,12 @@ function MessagesContent() {
           {activeUserId ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] font-bold">
+              <div className="p-4 border-b border-gray-200 dark:border-[#30363d] bg-gray-50 dark:bg-[#0d1117] flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold">
                   {(activeProfile?.full_name || activeProfile?.email || '?').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#0a1628]">
+                  <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3]">
                     {activeProfile?.full_name || activeProfile?.email || 'Loading...'}
                   </p>
                 </div>
@@ -302,7 +302,7 @@ function MessagesContent() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <div className="text-center text-gray-500 mt-8">
+                  <div className="text-center text-gray-500 dark:text-[#8b949e] mt-8">
                     <p>No messages yet. Say hello! 🏒</p>
                   </div>
                 ) : (
@@ -312,11 +312,11 @@ function MessagesContent() {
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
                           isMe
-                            ? 'bg-[#4fc3f7] text-[#0a1628] rounded-br-sm'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                            ? 'bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] rounded-br-sm'
+                            : 'bg-gray-100 dark:bg-[#21262d] text-gray-800 rounded-bl-sm'
                         }`}>
                           <p>{msg.content}</p>
-                          <p className={`text-xs mt-1 ${isMe ? 'text-[#0a1628]/60' : 'text-gray-400'}`}>
+                          <p className={`text-xs mt-1 ${isMe ? 'text-[#0a1628] dark:text-[#e6edf3]/60' : 'text-gray-400 dark:text-[#8b949e]'}`}>
                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
@@ -328,25 +328,25 @@ function MessagesContent() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSend} className="p-4 border-t border-gray-200 flex gap-2">
+              <form onSubmit={handleSend} className="p-4 border-t border-gray-200 dark:border-[#30363d] flex gap-2">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:ring-[#4fc3f7] focus:border-[#4fc3f7] text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-full focus:ring-[#4fc3f7] focus:border-[#4fc3f7] text-sm"
                 />
                 <button
                   type="submit"
                   disabled={isSending || !newMessage.trim()}
-                  className="bg-[#4fc3f7] text-[#0a1628] px-5 py-2 rounded-full font-semibold text-sm hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
+                  className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-5 py-2 rounded-full font-semibold text-sm hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
                 >
                   Send
                 </button>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
+            <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-[#8b949e]">
               <div className="text-center">
                 <p className="text-4xl mb-4">💬</p>
                 <p className="text-lg font-medium">Select a conversation</p>
@@ -362,7 +362,7 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div className="max-w-6xl mx-auto px-4 py-8"><p className="text-gray-600">Loading messages...</p></div>}>
+    <Suspense fallback={<div className="max-w-6xl mx-auto px-4 py-8"><p className="text-gray-600 dark:text-[#8b949e]">Loading messages...</p></div>}>
       <MessagesContent />
     </Suspense>
   )

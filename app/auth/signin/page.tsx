@@ -72,25 +72,25 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0a1628] to-[#1a2f4a]">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-2 text-[#0a1628]">
+      <div className="bg-white dark:bg-[#161b22] rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-2 text-[#0a1628] dark:text-[#e6edf3]">
           Welcome to 512Hockey.com
         </h1>
-        <p className="text-center text-gray-600 mb-6">
+        <p className="text-center text-gray-600 dark:text-[#8b949e] mb-6">
           {mode === 'signin' ? "Sign in to connect with Austin's hockey community" : "Create your account"}
         </p>
 
         {/* Mode Toggle */}
-        <div className="flex rounded-lg border border-gray-200 mb-6 overflow-hidden">
+        <div className="flex rounded-lg border border-gray-200 dark:border-[#30363d] mb-6 overflow-hidden">
           <button
             onClick={() => { setMode('signin'); setError(''); setSuccess('') }}
-            className={`flex-1 py-2 font-semibold text-sm transition ${mode === 'signin' ? 'bg-[#0a1628] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            className={`flex-1 py-2 font-semibold text-sm transition ${mode === 'signin' ? 'bg-[#0a1628] text-white' : 'bg-white text-gray-600 dark:text-[#8b949e] hover:bg-gray-50 dark:bg-[#0d1117]'}`}
           >
             Sign In
           </button>
           <button
             onClick={() => { setMode('signup'); setError(''); setSuccess('') }}
-            className={`flex-1 py-2 font-semibold text-sm transition ${mode === 'signup' ? 'bg-[#0a1628] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            className={`flex-1 py-2 font-semibold text-sm transition ${mode === 'signup' ? 'bg-[#0a1628] text-white' : 'bg-white text-gray-600 dark:text-[#8b949e] hover:bg-gray-50 dark:bg-[#0d1117]'}`}
           >
             Register
           </button>
@@ -110,44 +110,44 @@ export default function SignIn() {
         {/* Email/Password Form */}
         <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
             />
           </div>
           {mode === 'signup' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">Confirm Password</label>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
               />
             </div>
           )}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#4fc3f7] text-[#0a1628] py-3 rounded-lg font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
+            className="w-full bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] py-3 rounded-lg font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
           >
             {isLoading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
@@ -156,10 +156,10 @@ export default function SignIn() {
         {/* Divider */}
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-gray-300 dark:border-[#30363d]" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">or continue with</span>
+            <span className="px-2 bg-white text-gray-500 dark:text-[#8b949e]">or continue with</span>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export default function SignIn() {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#161b22] border-2 border-gray-300 dark:border-[#30363d] text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-50 dark:bg-[#0d1117] transition disabled:opacity-50"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -178,7 +178,7 @@ export default function SignIn() {
           Sign in with Google
         </button>
 
-        <p className="text-center text-gray-500 text-xs mt-6">
+        <p className="text-center text-gray-500 dark:text-[#8b949e] text-xs mt-6">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

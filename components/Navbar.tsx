@@ -9,6 +9,24 @@ import AuthButton from './AuthButton'
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  const toggleDark = () => {
+    const html = document.documentElement
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+      setIsDark(false)
+    } else {
+      html.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+      setIsDark(true)
+    }
+  }
 
   useEffect(() => {
     const getUser = async () => {
@@ -57,7 +75,16 @@ export default function Navbar() {
 
             </div>
           </div>
-          {!isLoading && <AuthButton user={user} />}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleDark}
+              className="text-xl hover:text-[#4fc3f7] transition"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
+            {!isLoading && <AuthButton user={user} />}
+          </div>
         </div>
       </div>
     </nav>

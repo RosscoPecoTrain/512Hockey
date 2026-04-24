@@ -49,11 +49,11 @@ export default function Forum() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-[#0a1628]">Community Forum</h1>
+        <h1 className="text-4xl font-bold text-[#0a1628] dark:text-[#e6edf3]">Community Forum</h1>
         {user && (
           <Link
             href="/forum/new"
-            className="bg-[#4fc3f7] text-[#0a1628] px-4 py-2 rounded font-semibold hover:bg-white transition"
+            className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-2 rounded font-semibold hover:bg-white transition"
           >
             New Post
           </Link>
@@ -66,8 +66,8 @@ export default function Forum() {
           onClick={() => setCategoryFilter('')}
           className={`px-4 py-2 rounded font-medium transition ${
             categoryFilter === ''
-              ? 'bg-[#4fc3f7] text-[#0a1628]'
-              : 'border border-[#4fc3f7] text-[#0a1628] hover:bg-[#4fc3f7] hover:text-white'
+              ? 'bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3]'
+              : 'border border-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] hover:bg-[#4fc3f7] hover:text-white'
           }`}
         >
           All
@@ -78,8 +78,8 @@ export default function Forum() {
             onClick={() => setCategoryFilter(cat)}
             className={`px-4 py-2 rounded font-medium transition ${
               categoryFilter === cat
-                ? 'bg-[#4fc3f7] text-[#0a1628]'
-                : 'border border-[#4fc3f7] text-[#0a1628] hover:bg-[#4fc3f7] hover:text-white'
+                ? 'bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3]'
+                : 'border border-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] hover:bg-[#4fc3f7] hover:text-white'
             }`}
           >
             {cat}
@@ -89,14 +89,14 @@ export default function Forum() {
 
       {/* Posts List */}
       {isLoading ? (
-        <p className="text-gray-600">Loading posts...</p>
+        <p className="text-gray-600 dark:text-[#8b949e]">Loading posts...</p>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">No posts yet in this category</p>
+          <p className="text-gray-600 dark:text-[#8b949e] mb-4">No posts yet in this category</p>
           {user && (
             <Link
               href="/forum/new"
-              className="inline-block bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded font-semibold"
+              className="inline-block bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded font-semibold"
             >
               Start a Discussion
             </Link>
@@ -106,7 +106,7 @@ export default function Forum() {
         <div className="space-y-4">
           {posts.map((post) => (
             <Link key={post.id} href={`/forum/${post.id}`}>
-              <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition hover:border-[#4fc3f7]">
+              <div className="bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition hover:border-[#4fc3f7]">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -115,16 +115,16 @@ export default function Forum() {
                           Pinned
                         </span>
                       )}
-                      <span className="bg-[#4fc3f7] text-[#0a1628] text-xs px-2 py-1 rounded">
+                      <span className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] text-xs px-2 py-1 rounded">
                         {post.category}
                       </span>
                     </div>
-                    <h3 className="text-xl font-semibold text-[#0a1628] hover:text-[#4fc3f7]">
+                    <h3 className="text-xl font-semibold text-[#0a1628] dark:text-[#e6edf3] hover:text-[#4fc3f7]">
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 mt-2 line-clamp-2">{post.content}</p>
+                    <p className="text-gray-600 dark:text-[#8b949e] mt-2 line-clamp-2">{post.content}</p>
                   </div>
-                  <div className="text-right text-sm text-gray-500 ml-4">
+                  <div className="text-right text-sm text-gray-500 dark:text-[#8b949e] ml-4">
                     <p>{post.view_count} views</p>
                     <p>{new Date(post.created_at).toLocaleDateString()}</p>
                   </div>

@@ -105,26 +105,26 @@ export default function MyProfile() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-4xl font-bold mb-8 text-[#0a1628]">My Profile</h1>
+      <h1 className="text-4xl font-bold mb-8 text-[#0a1628] dark:text-[#e6edf3]">My Profile</h1>
 
       {isLoading ? (
-        <p className="text-gray-600">Loading profile...</p>
+        <p className="text-gray-600 dark:text-[#8b949e]">Loading profile...</p>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none p-8">
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
               Email
             </label>
             <input
               type="email"
               value={user.email || ''}
               disabled
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-100 dark:bg-[#21262d] text-gray-600 dark:text-[#8b949e]"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
               Full Name
             </label>
             <input
@@ -133,20 +133,20 @@ export default function MyProfile() {
               value={formData.full_name}
               onChange={handleChange}
               placeholder="Your name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
             />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
                 Position
               </label>
               <select
                 name="position"
                 value={formData.position}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
               >
                 <option value="">Select position</option>
                 <option value="Forward">Forward</option>
@@ -156,14 +156,14 @@ export default function MyProfile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
                 Skill Level
               </label>
               <select
                 name="skill_level"
                 value={formData.skill_level}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
               >
                 <option value="">Select skill level</option>
                 <option value="Beginner">Beginner</option>
@@ -175,7 +175,7 @@ export default function MyProfile() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
               Bio
             </label>
             <textarea
@@ -184,12 +184,12 @@ export default function MyProfile() {
               onChange={handleChange}
               placeholder="Tell us about yourself..."
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-2">
               Leagues (comma-separated)
             </label>
             <input
@@ -198,14 +198,14 @@ export default function MyProfile() {
               value={formData.leagues}
               onChange={handleChange}
               placeholder="e.g., Austin Hockey League, Beginner Division"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-lg focus:ring-[#4fc3f7] focus:border-[#4fc3f7] dark:bg-[#21262d] dark:text-[#e6edf3] dark:border-[#30363d]"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full bg-[#4fc3f7] text-[#0a1628] py-2 rounded font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
+            className="w-full bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] py-2 rounded font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
           >
             {isSaving ? 'Saving...' : 'Save Profile'}
           </button>
