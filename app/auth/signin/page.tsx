@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://512-hockey.vercel.app'
+
 export default function SignIn() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +18,7 @@ export default function SignIn() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       })
       if (error) throw error
@@ -34,7 +36,7 @@ export default function SignIn() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       })
       if (error) throw error
