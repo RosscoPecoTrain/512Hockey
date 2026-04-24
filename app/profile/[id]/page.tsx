@@ -84,6 +84,14 @@ export default function ProfilePage() {
                 </p>
               )}
             </div>
+            {currentUser && currentUser.id === id && (
+              <Link
+                href="/profile"
+                className="bg-[#4fc3f7] text-[#0a1628] px-6 py-2 rounded font-semibold hover:bg-white transition"
+              >
+                ✏️ Edit Profile
+              </Link>
+            )}
             {currentUser && currentUser.id !== id && (
               <Link
                 href={`/messages?user=${id}`}
