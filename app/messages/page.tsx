@@ -245,7 +245,7 @@ function MessagesContent() {
                 <button
                   key={convo.userId}
                   onClick={() => setActiveUserId(convo.userId)}
-                  className={`w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] hover:bg-gray-50 dark:bg-[#0d1117] transition ${activeUserId === convo.userId ? 'bg-blue-50 border-l-4 border-l-[#4fc3f7]' : ''}`}
+                  className={`w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] transition ${activeUserId === convo.userId ? 'bg-[#4fc3f7]/10 border-l-4 border-l-[#4fc3f7]' : 'bg-white dark:bg-[#161b22] hover:bg-gray-50 dark:hover:bg-[#21262d]'}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold flex-shrink-0">
@@ -268,7 +268,7 @@ function MessagesContent() {
             )}
             {/* Show active user even if no prior messages */}
             {activeUserId && !conversations.find(c => c.userId === activeUserId) && activeProfile && (
-              <button className="w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] bg-blue-50 border-l-4 border-l-[#4fc3f7]">
+              <button className="w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] bg-[#4fc3f7]/10 border-l-4 border-l-[#4fc3f7]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold">
                     {(activeProfile.full_name || activeProfile.email || '?').charAt(0).toUpperCase()}
@@ -313,7 +313,7 @@ function MessagesContent() {
                         <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
                           isMe
                             ? 'bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] rounded-br-sm'
-                            : 'bg-gray-100 dark:bg-[#21262d] text-gray-800 rounded-bl-sm'
+                            : 'bg-gray-100 dark:bg-[#21262d] text-gray-800 dark:text-[#e6edf3] rounded-bl-sm'
                         }`}>
                           <p>{msg.content}</p>
                           <p className={`text-xs mt-1 ${isMe ? 'text-[#0a1628] dark:text-[#e6edf3]/60' : 'text-gray-400 dark:text-[#8b949e]'}`}>
@@ -334,7 +334,7 @@ function MessagesContent() {
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-full focus:ring-[#4fc3f7] focus:border-[#4fc3f7] text-sm"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-[#30363d] rounded-full focus:ring-[#4fc3f7] focus:border-[#4fc3f7] text-sm bg-white dark:bg-[#21262d] text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e]"
                 />
                 <button
                   type="submit"
