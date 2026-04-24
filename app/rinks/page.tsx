@@ -66,10 +66,10 @@ export default function Rinks() {
                       rel="noopener noreferrer"
                       className="flex-1 bg-[#4fc3f7] text-[#0a1628] px-4 py-2 rounded font-semibold text-center hover:bg-white transition"
                     >
-                      Website
+                      Visit Website
                     </a>
                   )}
-                  {rink.booking_url && (
+                  {rink.booking_url && rink.booking_url !== rink.website_url && (
                     <a
                       href={rink.booking_url}
                       target="_blank"
