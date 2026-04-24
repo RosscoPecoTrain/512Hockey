@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import ReportButton from '@/components/ReportButton'
 import type { Profile } from '@/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -84,6 +85,9 @@ export default function ProfilePage() {
                 </p>
               )}
             </div>
+            {currentUser && currentUser.id !== id && (
+              <ReportButton targetId={id} targetType="profile" currentUserId={currentUser.id} />
+            )}
             {currentUser && currentUser.id === id && (
               <Link
                 href="/profile"

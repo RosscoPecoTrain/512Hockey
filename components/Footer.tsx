@@ -17,6 +17,9 @@ export default function Footer() {
               <li><Link href="/directory" className="hover:text-[#4fc3f7] transition">Player Directory</Link></li>
               <li><Link href="/forum" className="hover:text-[#4fc3f7] transition">Community Forum</Link></li>
               <li><Link href="/rinks" className="hover:text-[#4fc3f7] transition">Find Rinks</Link></li>
+              <li><Link href="/guidelines" className="hover:text-[#4fc3f7] transition">Community Guidelines</Link></li>
+              <li><Link href="/terms" className="hover:text-[#4fc3f7] transition">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-[#4fc3f7] transition">Privacy Policy</Link></li>
             </ul>
           </div>
           <div>

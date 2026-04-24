@@ -179,7 +179,10 @@ export default function SignIn() {
         </button>
 
         <p className="text-center text-gray-500 dark:text-[#8b949e] text-xs mt-6">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you confirm you are <strong>18 or older</strong> and agree to our{' '}
+          <a href="/terms" className="text-[#4fc3f7] hover:underline">Terms of Service</a>,{' '}
+          <a href="/privacy" className="text-[#4fc3f7] hover:underline">Privacy Policy</a>, and{' '}
+          <a href="/guidelines" className="text-[#4fc3f7] hover:underline">Community Guidelines</a>.
         </p>
       </div>
     </div>
