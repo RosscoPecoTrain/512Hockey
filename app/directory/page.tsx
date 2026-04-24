@@ -42,6 +42,7 @@ export default function Directory() {
         const { data, error } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
         if (error) throw error
         setAllProfiles(data || [])
+        setFiltered(data || [])
       } catch (error) {
         console.error('Error fetching profiles:', error)
       } finally {
@@ -53,13 +54,14 @@ export default function Directory() {
 
   // Filter client-side
   useEffect(() => {
-    let results = allProfiles
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase()
+    let results = [...allProfiles]
+    const q = searchTerm.trim().toLowerCase()
+    if (q) {
       results = results.filter(p =>
-        p.full_name?.toLowerCase().includes(q) ||
-        p.bio?.toLowerCase().includes(q) ||
-        p.position?.toLowerCase().includes(q)
+        (p.full_name ?? '').toLowerCase().includes(q) ||
+        (p.bio ?? '').toLowerCase().includes(q) ||
+        (p.position ?? '').toLowerCase().includes(q) ||
+        (p.leagues ?? []).some((l: string) => l.toLowerCase().includes(q))
       )
     }
     if (positionFilter) {
