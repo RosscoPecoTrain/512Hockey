@@ -7,7 +7,7 @@ export default function Donate() {
 
       <div className="bg-gradient-to-r from-[#0a1628] to-[#1a2f4a] text-white rounded-lg p-8 mb-12">
         <p className="text-lg mb-4">
-          512Hockey.com is a community-driven platform dedicated to connecting Austin's hockey players. Your donation helps us maintain and improve the platform for everyone.
+          512Hockey.com is a community-driven platform dedicated to connecting Austin&apos;s hockey players. Your donation helps us maintain and improve the platform for everyone.
         </p>
         <p className="text-lg">
           <strong>Funds are used for:</strong>
@@ -55,7 +55,7 @@ export default function Donate() {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
         <p className="text-gray-700">
-          <strong>Note:</strong> Stripe integration is coming soon. We're currently setting up secure payment processing. Thank you for your interest in supporting 512Hockey.com!
+          <strong>Note:</strong> Stripe integration is coming soon. We&apos;re currently setting up secure payment processing. Thank you for your interest in supporting 512Hockey.com!
         </p>
       </div>
     </div>

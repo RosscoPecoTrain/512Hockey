@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -28,7 +28,7 @@ interface Profile {
   email: string | null
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const targetUserId = searchParams.get('user')
@@ -357,5 +357,13 @@ export default function MessagesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="max-w-6xl mx-auto px-4 py-8"><p className="text-gray-600">Loading messages...</p></div>}>
+      <MessagesContent />
+    </Suspense>
   )
 }

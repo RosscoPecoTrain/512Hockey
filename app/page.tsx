@@ -29,7 +29,7 @@ export default function Home() {
               🏒 512Hockey.com
             </h1>
             <p className="text-xl md:text-2xl text-[#4fc3f7] mb-8">
-              Austin's Community Hockey Hub
+              Austin&apos;s Community Hockey Hub
             </p>
             <p className="text-lg text-gray-300 mb-12 max-w-2xl mx-auto">
               Connect with fellow hockey enthusiasts in Austin. Find games, meet players, and discover the local rink scene.
@@ -112,7 +112,7 @@ export default function Home() {
                 Find Rinks
               </h3>
               <p className="text-gray-600">
-                Discover Austin's best ice rinks, view hours, and book ice time online.
+                Discover Austin&apos;s best ice rinks, view hours, and book ice time online.
               </p>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function Home() {
       <section className="bg-[#0a1628] text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Ready to Join Austin's Hockey Community?
+            Ready to Join Austin&apos;s Hockey Community?
           </h2>
           <p className="text-gray-300 mb-6">
             Sign up today to create your player profile, connect with others, and never miss a game.
