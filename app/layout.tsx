@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${geistMono.variable} bg-white dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] transition-colors`}>
+      <body className={`${geist.variable} ${geistMono.variable} bg-gray-100 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] transition-colors`}>
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />

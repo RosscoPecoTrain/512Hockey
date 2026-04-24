@@ -164,7 +164,7 @@ export default function SignIn() {
             <div className="w-full border-t border-gray-300 dark:border-[#30363d]" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500 dark:text-[#8b949e]">or continue with</span>
+            <span className="px-2 bg-white dark:bg-[#161b22] text-gray-500 dark:text-[#8b949e]">or continue with</span>
           </div>
         </div>
 
