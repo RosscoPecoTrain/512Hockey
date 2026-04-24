@@ -54,9 +54,7 @@ export default function Navbar() {
                   {/* Admin link would go here based on admin status */}
                 </>
               )}
-              <Link href="/donate" className="hover:text-[#4fc3f7] transition">
-                Donate
-              </Link>
+
             </div>
           </div>
           {!isLoading && <AuthButton user={user} />}
