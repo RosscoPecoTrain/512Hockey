@@ -74,7 +74,7 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0a1628] to-[#1a2f4a]">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-2 text-[#0a1628]">
-          Welcome to 512 Hockey
+          Welcome to 512Hockey
         </h1>
         <p className="text-center text-gray-600 mb-6">
           {mode === 'signin' ? "Sign in to connect with Austin's hockey community" : "Create your account"}

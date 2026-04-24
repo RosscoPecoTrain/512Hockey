@@ -34,7 +34,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
             <Link href="/" className="font-bold text-xl hover:text-[#4fc3f7] transition">
-              🏒 512 Hockey
+              🏒 512Hockey
             </Link>
             <div className="hidden md:flex gap-6">
               <Link href="/directory" className="hover:text-[#4fc3f7] transition">

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '512 Hockey - Austin Hockey Community',
+  title: '512Hockey - Austin Hockey Community',
   description: 'Connect with hockey players in Austin, find games, and discover local rinks',
 }
 
