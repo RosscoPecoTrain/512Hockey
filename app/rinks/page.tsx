@@ -11,7 +11,7 @@ export default function Rinks() {
   useEffect(() => {
     const fetchRinks = async () => {
       try {
-        const { data, error } = await supabase.from('rinks').select('*')
+        const { data, error } = await supabase.from('rinks').select('*').order('sort_order', { ascending: true })
 
         if (error) throw error
         setRinks(data || [])
