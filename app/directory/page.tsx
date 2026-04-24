@@ -21,7 +21,6 @@ const SKILL_COLORS: Record<string, string> = {
 export default function Directory() {
   const router = useRouter()
   const [allProfiles, setAllProfiles] = useState<Profile[]>([])
-  const [filtered, setFiltered] = useState<Profile[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [positionFilter, setPositionFilter] = useState('')
@@ -42,7 +41,6 @@ export default function Directory() {
         const { data, error } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
         if (error) throw error
         setAllProfiles(data || [])
-        setFiltered(data || [])
       } catch (error) {
         console.error('Error fetching profiles:', error)
       } finally {
@@ -52,24 +50,17 @@ export default function Directory() {
     fetchProfiles()
   }, [])
 
-  // Filter client-side
-  useEffect(() => {
-    let results = [...allProfiles]
+  // Compute filtered inline — no separate state, no race condition
+  const filtered = allProfiles.filter(p => {
     const q = searchTerm.trim().toLowerCase()
-    if (q) {
-      results = results.filter(p =>
-        (p.full_name ?? '').toLowerCase().includes(q) ||
-        (p.bio ?? '').toLowerCase().includes(q) ||
-        (p.position ?? '').toLowerCase().includes(q) ||
-        (p.leagues ?? []).some((l: string) => l.toLowerCase().includes(q))
-      )
-    }
-    if (positionFilter) {
-      results = results.filter(p => p.position === positionFilter)
-    }
-    setFiltered(results)
-    setPage(1)
-  }, [searchTerm, positionFilter, allProfiles])
+    const matchesSearch = !q ||
+      (p.full_name ?? '').toLowerCase().includes(q) ||
+      (p.bio ?? '').toLowerCase().includes(q) ||
+      (p.position ?? '').toLowerCase().includes(q) ||
+      (p.leagues ?? []).some((l: string) => l.toLowerCase().includes(q))
+    const matchesPosition = !positionFilter || p.position === positionFilter
+    return matchesSearch && matchesPosition
+  })
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
   const paginated = filtered.slice((page - 1) * perPage, page * perPage)
@@ -87,7 +78,7 @@ export default function Directory() {
               type="text"
               placeholder="Name, bio, position..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={e => { setSearchTerm(e.target.value); setPage(1) }}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#21262d] text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
             />
           </div>
@@ -95,7 +86,7 @@ export default function Directory() {
             <label className="block text-xs font-semibold text-gray-500 dark:text-[#8b949e] mb-1 uppercase tracking-wide">Position</label>
             <select
               value={positionFilter}
-              onChange={e => setPositionFilter(e.target.value)}
+              onChange={e => { setPositionFilter(e.target.value); setPage(1) }}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#21262d] text-gray-900 dark:text-[#e6edf3] focus:ring-[#4fc3f7] focus:border-[#4fc3f7]"
             >
               <option value="">All Positions</option>
