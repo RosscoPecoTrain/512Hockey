@@ -38,7 +38,15 @@ interface Report {
   reporter?: { full_name: string | null; email: string | null }
 }
 
-type Tab = 'forum' | 'reports' | 'users'
+type Tab = 'forum' | 'reports' | 'users' | 'photos'
+
+interface PendingPhoto {
+  id: string
+  full_name: string | null
+  email: string | null
+  avatar_url: string
+  avatar_status: string
+}
 
 export default function AdminPage() {
   const router = useRouter()
@@ -49,6 +57,7 @@ export default function AdminPage() {
   const [pendingPosts, setPendingPosts] = useState<ForumPost[]>([])
   const [reports, setReports] = useState<Report[]>([])
   const [users, setUsers] = useState<Profile[]>([])
+  const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([])
   const [actionMsg, setActionMsg] = useState('')
 
   // Auth + admin check
@@ -76,6 +85,7 @@ export default function AdminPage() {
     if (tab === 'forum') loadPendingPosts()
     if (tab === 'reports') loadReports()
     if (tab === 'users') loadUsers()
+    if (tab === 'photos') loadPendingPhotos()
   }, [tab, isAdmin])
 
   const loadPendingPosts = async () => {
@@ -106,6 +116,26 @@ export default function AdminPage() {
     profiles?.forEach(p => { profileMap[p.id] = p })
 
     setReports(data.map(r => ({ ...r, reporter: profileMap[r.reporter_id] })))
+  }
+
+  const loadPendingPhotos = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, avatar_url, avatar_status')
+      .eq('avatar_status', 'pending')
+    setPendingPhotos((data || []) as PendingPhoto[])
+  }
+
+  const approvePhoto = async (userId: string) => {
+    await supabase.from('profiles').update({ avatar_status: 'approved' }).eq('id', userId)
+    setPendingPhotos(prev => prev.filter(p => p.id !== userId))
+    flash('Photo approved ✓')
+  }
+
+  const rejectPhoto = async (userId: string) => {
+    await supabase.from('profiles').update({ avatar_url: null, avatar_status: 'none' }).eq('id', userId)
+    setPendingPhotos(prev => prev.filter(p => p.id !== userId))
+    flash('Photo rejected and removed')
   }
 
   const loadUsers = async () => {
@@ -154,6 +184,7 @@ export default function AdminPage() {
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'forum', label: '🗂️ Forum Queue', count: pendingPosts.length },
     { key: 'reports', label: '🚩 Reports', count: reports.filter(r => r.status === 'pending').length },
+    { key: 'photos', label: '📷 Photos', count: pendingPhotos.length },
     { key: 'users', label: '👥 Users', count: users.length },
   ]
 
@@ -274,6 +305,37 @@ export default function AdminPage() {
                     </button>
                   </div>
                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pending Photos */}
+      {tab === 'photos' && (
+        <div className="space-y-4">
+          {pendingPhotos.length === 0 ? (
+            <div className="bg-white dark:bg-[#161b22] rounded-lg border border-gray-200 dark:border-[#30363d] p-8 text-center text-gray-500 dark:text-[#8b949e]">
+              ✅ No photos pending approval
+            </div>
+          ) : pendingPhotos.map(p => (
+            <div key={p.id} className="bg-white dark:bg-[#161b22] rounded-lg border border-yellow-300 dark:border-yellow-800 p-6 flex items-center gap-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.avatar_url} alt="Pending avatar" className="w-24 h-24 rounded-lg object-cover border-2 border-gray-200 dark:border-[#30363d]" />
+              <div className="flex-1">
+                <p className="font-bold text-[#0a1628] dark:text-[#e6edf3] text-lg">{p.full_name || '(no name)'}</p>
+                <p className="text-sm text-gray-500 dark:text-[#8b949e]">{p.email}</p>
+                <a href={`/profile/${p.id}`} className="text-xs text-[#4fc3f7] hover:underline">View profile →</a>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => approvePhoto(p.id)}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-600 transition">
+                  ✓ Approve
+                </button>
+                <button onClick={() => rejectPhoto(p.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-red-600 transition">
+                  ✗ Reject
+                </button>
               </div>
             </div>
           ))}
