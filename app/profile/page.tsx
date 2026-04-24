@@ -38,13 +38,14 @@ export default function MyProfile() {
         .single()
 
       if (error && error.code === 'PGRST116') {
-        // Profile doesn't exist, create it
-        const { data: newProfile } = await supabase
+        // Profile doesn't exist, create it using upsert
+        const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
-          .insert([{ id: user.id, email: user.email }])
+          .upsert([{ id: user.id, email: user.email }], { onConflict: 'id' })
           .select()
           .single()
 
+        if (insertError) console.error('Error creating profile:', insertError)
         setProfile(newProfile)
         setFormData({ full_name: '', position: '', skill_level: '', bio: '', leagues: '' })
       } else if (data) {
@@ -77,7 +78,8 @@ export default function MyProfile() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({           id: user.id,
+          email: user.email,
           full_name: formData.full_name,
           position: formData.position || null,
           skill_level: formData.skill_level || null,
