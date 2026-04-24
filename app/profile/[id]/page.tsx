@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ReportButton from '@/components/ReportButton'
+import Avatar from '@/components/Avatar'
 import type { Profile } from '@/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -71,8 +72,8 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="bg-gradient-to-r from-[#0a1628] to-[#1a2f4a] text-white p-8">
           <div className="flex items-start gap-8 flex-wrap">
-            <div className="w-24 h-24 bg-[#4fc3f7] rounded-full flex items-center justify-center text-4xl font-bold text-[#0a1628] dark:text-[#e6edf3]">
-              {profile.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+            <div>
+              <Avatar userId={profile.id} photoUrl={profile.avatar_url} size={96} />
             </div>
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2">{profile.full_name ?? 'Anonymous'}</h1>

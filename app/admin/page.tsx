@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Avatar from '@/components/Avatar'
 
 interface Profile {
   id: string
@@ -297,8 +298,13 @@ export default function AdminPage() {
                 <tr key={user.id} className={`border-t border-gray-100 dark:border-[#30363d] ${i % 2 === 0 ? 'bg-white dark:bg-[#161b22]' : 'bg-gray-50 dark:bg-[#0d1117]'}`}>
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-[#0a1628] dark:text-[#e6edf3]">{user.full_name || '(no name)'}</p>
-                      <p className="text-xs text-gray-500 dark:text-[#8b949e]">{user.email}</p>
+                        <div className="flex items-center gap-2">
+                      <Avatar userId={user.id} size={28} />
+                      <div>
+                        <p className="font-medium text-[#0a1628] dark:text-[#e6edf3]">{user.full_name || '(no name)'}</p>
+                        <p className="text-xs text-gray-500 dark:text-[#8b949e]">{user.email}</p>
+                      </div>
+                    </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-[#8b949e] hidden md:table-cell">{user.position || '—'}</td>

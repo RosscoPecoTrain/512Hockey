@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Avatar from '@/components/Avatar'
 import type { Profile } from '@/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -143,9 +144,7 @@ export default function Directory() {
           {paginated.map(profile => (
             <div key={profile.id} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#21262d] transition">
               {/* Avatar */}
-              <div className="w-10 h-10 bg-[#0a1628] dark:bg-[#4fc3f7] rounded-full flex items-center justify-center text-white dark:text-[#0a1628] font-bold text-sm flex-shrink-0">
-                {profile.full_name?.charAt(0)?.toUpperCase() || '?'}
-              </div>
+              <Avatar userId={profile.id} photoUrl={profile.avatar_url} size={40} />
 
               {/* Name + details */}
               <div className="flex-1 min-w-0">

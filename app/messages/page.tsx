@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Avatar from '@/components/Avatar'
 import type { User } from '@supabase/supabase-js'
 
 interface Message {
@@ -248,9 +249,7 @@ function MessagesContent() {
                   className={`w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] transition ${activeUserId === convo.userId ? 'bg-[#4fc3f7]/10 border-l-4 border-l-[#4fc3f7]' : 'bg-white dark:bg-[#161b22] hover:bg-gray-50 dark:hover:bg-[#21262d]'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold flex-shrink-0">
-                      {convo.name.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar userId={convo.userId} size={40} />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center">
                         <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3] truncate">{convo.name}</p>
@@ -270,9 +269,7 @@ function MessagesContent() {
             {activeUserId && !conversations.find(c => c.userId === activeUserId) && activeProfile && (
               <button className="w-full text-left p-4 border-b border-gray-100 dark:border-[#30363d] bg-[#4fc3f7]/10 border-l-4 border-l-[#4fc3f7]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold">
-                    {(activeProfile.full_name || activeProfile.email || '?').charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar userId={activeProfile.id} size={40} />
                   <div>
                     <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3]">{activeProfile.full_name || activeProfile.email}</p>
                     <p className="text-sm text-gray-500 dark:text-[#8b949e]">New conversation</p>
@@ -289,9 +286,7 @@ function MessagesContent() {
             <>
               {/* Chat Header */}
               <div className="p-4 border-b border-gray-200 dark:border-[#30363d] bg-gray-50 dark:bg-[#0d1117] flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#4fc3f7] rounded-full flex items-center justify-center text-[#0a1628] dark:text-[#e6edf3] font-bold">
-                  {(activeProfile?.full_name || activeProfile?.email || '?').charAt(0).toUpperCase()}
-                </div>
+                <Avatar userId={activeProfile?.id ?? ''} size={36} />
                 <div>
                   <p className="font-semibold text-[#0a1628] dark:text-[#e6edf3]">
                     {activeProfile?.full_name || activeProfile?.email || 'Loading...'}
