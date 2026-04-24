@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -25,8 +26,11 @@ export default function Home() {
       <section className="bg-gradient-to-b from-[#0a1628] to-[#1a2f4a] text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <Image src="/logo.jpg" alt="512Hockey.com" width={200} height={200} className="rounded-full shadow-2xl border-4 border-[#4fc3f7]" />
+            </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-4">
-              🏒 512Hockey.com
+              512Hockey.com
             </h1>
             <p className="text-xl md:text-2xl text-[#4fc3f7] mb-8">
               Austin&apos;s Community Hockey Hub

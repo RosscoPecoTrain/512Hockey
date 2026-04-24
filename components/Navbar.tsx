@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -59,8 +60,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="font-bold text-xl hover:text-[#4fc3f7] transition flex-shrink-0">
-            🏒 512Hockey.com
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition flex-shrink-0">
+            <Image src="/logo.jpg" alt="512Hockey.com" width={44} height={44} className="rounded-full" />
+            <span className="font-bold text-xl hidden sm:block">512Hockey.com</span>
           </Link>
 
           {/* Desktop nav */}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -6,7 +7,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">🏒 512Hockey.com</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <Image src="/logo.jpg" alt="512Hockey.com" width={40} height={40} className="rounded-full" />
+              <h3 className="text-lg font-bold">512Hockey.com</h3>
+            </div>
             <p className="text-gray-300">
               Austin&apos;s community hockey hub. Connect with players, find games, and discover local rinks.
             </p>
