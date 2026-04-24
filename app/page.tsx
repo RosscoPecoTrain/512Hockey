@@ -72,49 +72,18 @@ export default function Home() {
             What We Offer
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Player Directory */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
-              <div className="text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
-                Player Directory
-              </h3>
-              <p className="text-gray-600 dark:text-[#8b949e]">
-                Browse hockey players in Austin. Find teammates, rivals, and connect with the community.
-              </p>
-            </div>
-
-            {/* Community Forum */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
-              <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
-                Community Forum
-              </h3>
-              <p className="text-gray-600 dark:text-[#8b949e]">
-                Discuss games, share strategies, and organize pickup games with other players.
-              </p>
-            </div>
-
-            {/* In-App Messaging */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
-              <div className="text-4xl mb-4">💌</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
-                Direct Messaging
-              </h3>
-              <p className="text-gray-600 dark:text-[#8b949e]">
-                Send private messages to other players. Coordinate games and build friendships.
-              </p>
-            </div>
-
-            {/* Rink Finder */}
-            <div className="border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none transition">
-              <div className="text-4xl mb-4">🏟️</div>
-              <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
-                Find Rinks
-              </h3>
-              <p className="text-gray-600 dark:text-[#8b949e]">
-                Discover Austin&apos;s best ice rinks, view hours, and book ice time online.
-              </p>
-            </div>
+            {[
+              { href: '/directory', emoji: '👥', title: 'Player Directory', desc: 'Browse hockey players in Austin. Find teammates, rivals, and connect with the community.' },
+              { href: '/forum', emoji: '💬', title: 'Community Forum', desc: 'Discuss games, share strategies, and organize pickup games with other players.' },
+              { href: '/messages', emoji: '💌', title: 'Direct Messaging', desc: 'Send private messages to other players. Coordinate games and build friendships.' },
+              { href: '/rinks', emoji: '🏟️', title: 'Find Rinks', desc: "Discover Austin's best ice rinks, view hours, and book ice time online." },
+            ].map(({ href, emoji, title, desc }) => (
+              <Link key={href} href={href} className="block border border-[#4fc3f7] rounded-lg p-6 hover:shadow-lg dark:shadow-none hover:bg-[#4fc3f7]/5 transition cursor-pointer">
+                <div className="text-4xl mb-4">{emoji}</div>
+                <h3 className="text-xl font-semibold mb-2 text-[#0a1628] dark:text-[#e6edf3]">{title}</h3>
+                <p className="text-gray-600 dark:text-[#8b949e]">{desc}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
