@@ -13,6 +13,7 @@ export default function Navbar() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDark, setIsDark] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
 
   // Close menu on route change
@@ -43,11 +44,23 @@ export default function Navbar() {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        const { data } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single()
+        setIsAdmin(!!data?.is_admin)
+      }
       setIsLoading(false)
     }
     getUser()
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => { setUser(session?.user ?? null) }
+      async (_event, session) => {
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          const { data } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single()
+          setIsAdmin(!!data?.is_admin)
+        } else {
+          setIsAdmin(false)
+        }
+      }
     )
     return () => subscription.unsubscribe()
   }, [])
@@ -57,6 +70,7 @@ export default function Navbar() {
     { href: '/forum', label: 'Forum' },
     { href: '/rinks', label: 'Rinks' },
     ...(user ? [{ href: '/messages', label: 'Messages' }] : []),
+    ...(isAdmin ? [{ href: '/admin', label: '⚙️ Admin' }] : []),
   ]
 
   return (
