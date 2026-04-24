@@ -17,13 +17,19 @@ export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [ageConfirmed, setAgeConfirmed] = useState(false)
+
+  const checkAgreementsAndRedirect = async (userId: string) => {
+    const { data: signed } = await supabase
+      .from('user_agreements')
+      .select('agreement_type, agreement_version')
+      .eq('user_id', userId)
+    const { REQUIRED_AGREEMENTS } = await import('@/lib/agreements')
+    const signedSet = new Set((signed || []).map((a: { agreement_type: string; agreement_version: string }) => `${a.agreement_type}:${a.agreement_version}`))
+    const hasUnsigned = REQUIRED_AGREEMENTS.some(a => !signedSet.has(`${a.type}:${a.version}`))
+    router.push(hasUnsigned ? '/agree?redirect=/profile' : '/profile')
+  }
 
   const handleGoogleSignIn = async () => {
-    if (!ageConfirmed) {
-      setError('You must confirm you are 18 or older to continue.')
-      return
-    }
     try {
       setIsLoading(true)
       setError('')
@@ -64,9 +70,9 @@ export default function SignIn() {
         if (error) throw error
         setSuccess('Check your email for a confirmation link!')
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push('/profile')
+        if (data.user) await checkAgreementsAndRedirect(data.user.id)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -151,7 +157,7 @@ export default function SignIn() {
           )}
           <button
             type="submit"
-            disabled={isLoading || !ageConfirmed}
+            disabled={isLoading}
             className="w-full bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] py-3 rounded-lg font-semibold hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50"
           >
             {isLoading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
@@ -171,7 +177,7 @@ export default function SignIn() {
         {/* Google — always white background per Google brand guidelines */}
         <button
           onClick={handleGoogleSignIn}
-          disabled={isLoading || !ageConfirmed}
+          disabled={isLoading}
           className="w-full flex items-center justify-center gap-3 py-3 rounded-lg font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: '#fff', border: '1px solid #dadce0', color: '#3c4043', fontFamily: 'Roboto, sans-serif' }}
         >
@@ -185,28 +191,11 @@ export default function SignIn() {
           Sign in with Google
         </button>
 
-        {/* Age confirmation checkbox */}
-        <div className={`flex items-start gap-3 p-3 rounded-lg border mb-4 ${ageConfirmed ? 'border-green-400 bg-green-50 dark:bg-green-900/20' : 'border-gray-300 dark:border-[#30363d]'}`}>
-          <input
-            type="checkbox"
-            id="ageConfirm"
-            checked={ageConfirmed}
-            onChange={e => { setAgeConfirmed(e.target.checked); if (e.target.checked) setError('') }}
-            className="mt-0.5 accent-[#4fc3f7] w-4 h-4 flex-shrink-0"
-          />
-          <label htmlFor="ageConfirm" className="text-sm text-gray-700 dark:text-[#e6edf3] cursor-pointer">
-            I confirm I am <strong>18 years of age or older</strong> and agree to the{' '}
-            <a href="/terms" className="text-[#4fc3f7] hover:underline">Terms of Service</a>,{' '}
-            <a href="/privacy" className="text-[#4fc3f7] hover:underline">Privacy Policy</a>, and{' '}
-            <a href="/guidelines" className="text-[#4fc3f7] hover:underline">Community Guidelines</a>.
-          </label>
-        </div>
-
-        <p className="text-center text-gray-500 dark:text-[#8b949e] text-xs mt-6 hidden">
-          By signing in, you confirm you are <strong>18 or older</strong> and agree to our{' '}
-          <a href="/terms" className="text-[#4fc3f7] hover:underline">Terms of Service</a>,{' '}
-          <a href="/privacy" className="text-[#4fc3f7] hover:underline">Privacy Policy</a>, and{' '}
-          <a href="/guidelines" className="text-[#4fc3f7] hover:underline">Community Guidelines</a>.
+        <p className="text-center text-gray-500 dark:text-[#8b949e] text-xs mt-4">
+          By signing in you agree to our{' '}
+          <a href="/terms" className="text-[#4fc3f7] hover:underline">Terms</a>,{' '}
+          <a href="/privacy" className="text-[#4fc3f7] hover:underline">Privacy Policy</a> &amp;{' '}
+          <a href="/guidelines" className="text-[#4fc3f7] hover:underline">Guidelines</a>.
         </p>
       </div>
     </div>

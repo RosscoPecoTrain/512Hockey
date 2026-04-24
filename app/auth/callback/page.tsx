@@ -15,7 +15,21 @@ export default function AuthCallback() {
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        router.push('/profile')
+        // Check if user has signed all required agreements
+        const { data: signed } = await supabase
+          .from('user_agreements')
+          .select('agreement_type, agreement_version')
+          .eq('user_id', session.user.id)
+
+        const { REQUIRED_AGREEMENTS } = await import('@/lib/agreements')
+        const signedSet = new Set((signed || []).map((a: { agreement_type: string; agreement_version: string }) => `${a.agreement_type}:${a.agreement_version}`))
+        const hasUnsigned = REQUIRED_AGREEMENTS.some(a => !signedSet.has(`${a.type}:${a.version}`))
+
+        if (hasUnsigned) {
+          router.push('/agree?redirect=/profile')
+        } else {
+          router.push('/profile')
+        }
       } else {
         router.push('/auth/signin')
       }
