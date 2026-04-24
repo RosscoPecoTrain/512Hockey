@@ -172,6 +172,7 @@ function MessagesContent() {
       if (error) throw error
       setMessages(prev => [...prev, data])
       setNewMessage('')
+      setTimeout(() => inputRef.current?.focus(), 50)
       setConversations(prev => {
         const existing = prev.find(c => c.userId === activeUserId)
         if (existing) {
@@ -299,19 +300,19 @@ function MessagesContent() {
       </div>
 
       {/* Input — pinned to bottom */}
-      <form onSubmit={handleSend} className="p-3 border-t border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] flex gap-2 flex-shrink-0">
+      <form onSubmit={handleSend} className="p-3 border-t border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] flex gap-2 flex-shrink-0 overflow-hidden">
         <input
           ref={inputRef}
           type="text"
           value={newMessage}
           onChange={e => setNewMessage(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-[#30363d] rounded-full text-sm bg-gray-50 dark:bg-[#21262d] text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] focus:ring-[#4fc3f7] focus:border-[#4fc3f7] outline-none"
+          className="flex-1 min-w-0 px-4 py-2.5 border border-gray-300 dark:border-[#30363d] rounded-full text-sm bg-gray-50 dark:bg-[#21262d] text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] focus:ring-[#4fc3f7] focus:border-[#4fc3f7] outline-none"
         />
         <button
           type="submit"
           disabled={isSending || !newMessage.trim()}
-          className="bg-[#4fc3f7] text-[#0a1628] px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50 flex-shrink-0"
+          className="bg-[#4fc3f7] text-[#0a1628] w-16 rounded-full font-semibold text-sm hover:bg-[#0a1628] hover:text-[#4fc3f7] transition disabled:opacity-50 flex-shrink-0"
         >
           Send
         </button>
@@ -320,9 +321,9 @@ function MessagesContent() {
   )
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)]">
+    <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - 64px)' }}>
       {/* Desktop: side-by-side. Mobile: show one panel at a time */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
 
         {/* Conversation list — full width mobile (when list view), 1/3 desktop */}
         <div className={`
