@@ -37,7 +37,7 @@ interface JobLog {
 }
 
 type Tab = 'config' | 'logs'
-type SortKey = 'job_name' | 'schedule_cron' | 'lastRun' | 'nextRun'
+type SortKey = 'job_name' | 'schedule_cron' | 'lastRun' | 'nextRun' | 'job_name_logs' | 'started_at' | 'completed_at' | 'duration_ms' | 'status'
 
 export default function JobsPage() {
   const router = useRouter()
@@ -46,6 +46,8 @@ export default function JobsPage() {
   const [authChecking, setAuthChecking] = useState(true)
   const [sortKey, setSortKey] = useState<SortKey>('nextRun')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [logSortKey, setLogSortKey] = useState<SortKey>('started_at')
+  const [logSortDir, setLogSortDir] = useState<'asc' | 'desc'>('desc')
 
   // Config state
   const [jobs, setJobs] = useState<JobConfig[]>([])
@@ -584,19 +586,30 @@ export default function JobsPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-100 border-b border-gray-200">
                       <tr>
-                        <th className="px-6 py-3 text-left font-medium text-gray-700">Job</th>
-                        <th className="px-6 py-3 text-left font-medium text-gray-700">Status</th>
-                        <th className="px-6 py-3 text-left font-medium text-gray-700">
-                          Duration
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium text-gray-700">Started</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('job_name_logs'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Job {logSortKey === 'job_name_logs' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('status'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Status {logSortKey === 'status' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('duration_ms'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Duration {logSortKey === 'duration_ms' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('started_at'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Start Date {logSortKey === 'started_at' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('completed_at'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>End Date {logSortKey === 'completed_at' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
                         <th className="px-6 py-3 text-right font-medium text-gray-700">
                           Action
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {logs.map((log) => (
+                      {logs.sort((a, b) => {
+                        let aVal: any = a[logSortKey as keyof JobLog] || ''
+                        let bVal: any = b[logSortKey as keyof JobLog] || ''
+                        if (logSortKey === 'job_name_logs') {
+                          aVal = a.job_name
+                          bVal = b.job_name
+                        }
+                        if (typeof aVal === 'string') aVal = aVal.toLowerCase()
+                        if (typeof bVal === 'string') bVal = bVal.toLowerCase()
+                        if (aVal < bVal) return logSortDir === 'asc' ? -1 : 1
+                        if (aVal > bVal) return logSortDir === 'asc' ? 1 : -1
+                        return 0
+                      }).map((log) => (
                         <tr key={log.id} className="hover:bg-gray-50 transition">
                           <td className="px-6 py-3 font-medium text-gray-900">{log.job_name}</td>
                           <td className="px-6 py-3">
@@ -615,10 +628,11 @@ export default function JobsPage() {
                           <td className="px-6 py-3 text-gray-600">
                             {log.duration_ms ? `${log.duration_ms}ms` : '-'}
                           </td>
-                          <td className="px-6 py-3 text-gray-600">
-                            {formatDistanceToNow(new Date(log.created_at), {
-                              addSuffix: true,
-                            })}
+                          <td className="px-6 py-3 text-gray-600 text-xs">
+                            {new Date(log.started_at).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-3 text-gray-600 text-xs">
+                            {log.completed_at ? new Date(log.completed_at).toLocaleString() : '-'}
                           </td>
                           <td className="px-6 py-3 text-right">
                             <button
