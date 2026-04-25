@@ -48,14 +48,18 @@ export default function EventsPage() {
         const today = new Date().toISOString()
         const { data: evtData, error: evtError } = await supabase
           .from('events')
-          .select('*, locations(*)')
+          .select('*, locations(*), event_types(*)')
           .gte('start_time', today)
-          .eq('event_types.name', 'Drop-In Hockey')
           .order('start_time', { ascending: true })
 
         if (evtError) throw evtError
-        setEvents(evtData as EventWithLocation[] || [])
-        setFilteredEvents(evtData as EventWithLocation[] || [])
+        
+        // Filter for Drop-In Hockey events
+        const dropInEvents = (evtData || []).filter(
+          (evt: any) => evt.event_types?.name === 'Drop-In Hockey'
+        )
+        setEvents(dropInEvents as EventWithLocation[])
+        setFilteredEvents(dropInEvents as EventWithLocation[])
       } catch (error) {
         console.error('Error fetching events:', error)
       } finally {
