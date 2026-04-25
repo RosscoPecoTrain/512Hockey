@@ -233,7 +233,7 @@ export default function AdminPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            ⚙️ Job Logs
+            ⚙️ Jobs
           </a>
           {actionMsg && (
             <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-4 py-2 rounded-lg text-sm font-medium">
