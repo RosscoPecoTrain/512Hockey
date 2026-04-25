@@ -93,9 +93,16 @@ export default function NotificationsPage() {
       if (res.ok) {
         const { subscription } = await res.json()
         setSubscriptions([...subscriptions, subscription])
+        // Close modal and reset state
+        setModalOpen(false)
+      } else {
+        const errorData = await res.json()
+        console.error('Subscription error:', res.status, errorData)
+        alert('Failed to subscribe. Please try again.')
       }
     } catch (error) {
       console.error('Error subscribing:', error)
+      alert('Error: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setUpdating(null)
     }

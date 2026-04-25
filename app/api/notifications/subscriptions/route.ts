@@ -32,12 +32,11 @@ export async function GET(request: NextRequest) {
         event_types (
           id,
           name,
-          location,
-          rink,
           source_url,
           last_detected_event_title,
           last_detected_event_date,
-          last_check_status
+          last_check_status,
+          locations(name, city)
         )
       `
       )
