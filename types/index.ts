@@ -67,8 +67,8 @@ export type Rink = Location
 export interface EventType {
   id: string
   name: string
-  location: string
   location_id?: string
+  locations?: Location
   source_type: 'shopify' | 'api' | 'website'
   source_url: string
   source_pattern: string

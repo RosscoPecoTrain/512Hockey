@@ -44,14 +44,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       name,
-      location,
       location_id,
       source_type,
       source_url,
       source_pattern,
     } = body
 
-    if (!name || !location || !source_type || !source_url || !source_pattern) {
+    if (!name || !location_id || !source_type || !source_url || !source_pattern) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -63,7 +62,6 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           name,
-          location,
           location_id,
           source_type,
           source_url,

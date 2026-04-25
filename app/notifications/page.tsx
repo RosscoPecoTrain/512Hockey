@@ -171,8 +171,8 @@ export default function NotificationsPage() {
                       {eventType.name}
                     </h3>
                     <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      <span>📍 {eventType.location}</span>
                       {eventType.rink && <span>🏟️ {eventType.rink}</span>}
+                      {eventType.rink && <span>📍 {eventType.rink}</span>}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       You'll be notified when new dates are posted.
