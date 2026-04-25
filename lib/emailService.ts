@@ -1,9 +1,13 @@
-import sgMail from '@sendgrid/mail'
+import nodemailer from 'nodemailer'
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-}
+// Create transporter for Gmail
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+})
 
 export interface EmailNotificationParams {
   toEmail: string
@@ -11,10 +15,11 @@ export interface EmailNotificationParams {
   eventTitle: string
   eventDate: string
   registrationUrl: string
+  unsubscribeUrl: string
 }
 
 /**
- * Send event notification email via SendGrid
+ * Send event notification email via Gmail SMTP
  */
 export async function sendEventNotificationEmail({
   toEmail,
@@ -22,53 +27,73 @@ export async function sendEventNotificationEmail({
   eventTitle,
   eventDate,
   registrationUrl,
+  unsubscribeUrl,
 }: EmailNotificationParams) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn('⚠️  SENDGRID_API_KEY not set, skipping email')
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('⚠️  Gmail credentials not configured, skipping email')
     return false
   }
 
   try {
-    const msg = {
+    const mailOptions = {
+      from: `512Hockey <${process.env.GMAIL_USER}>`,
       to: toEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@512hockey.com',
       subject: `🏒 ${eventTitle} - Registration Now Open`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #0a1628 0%, #4fc3f7 100%); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">🏒 New Event Available</h1>
-          </div>
-          
-          <div style="padding: 30px; background: #f9fafb; border: 1px solid #e5e7eb;">
-            <p style="font-size: 16px; color: #333;">Hi ${toName},</p>
-            
-            <p style="font-size: 16px; color: #333; line-height: 1.6;">
-              A new event you subscribed to is now available for registration:
-            </p>
-            
-            <div style="background: white; border-left: 4px solid #4fc3f7; padding: 20px; margin: 20px 0; border-radius: 4px;">
-              <h2 style="margin: 0 0 10px 0; color: #0a1628; font-size: 20px;">${eventTitle}</h2>
-              <p style="margin: 0; color: #666; font-size: 14px;">📅 ${eventDate}</p>
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; }
+              .header { background: linear-gradient(135deg, #0a1628 0%, #4fc3f7 100%); padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .header h1 { color: white; margin: 0; font-size: 28px; }
+              .content { padding: 30px 20px; background: #f9fafb; border: 1px solid #e5e7eb; }
+              .event-box { background: white; border-left: 4px solid #4fc3f7; padding: 20px; margin: 20px 0; border-radius: 4px; }
+              .event-box h2 { margin: 0 0 10px 0; color: #0a1628; font-size: 20px; }
+              .event-box p { margin: 0; color: #666; font-size: 14px; }
+              .cta-button { text-align: center; margin: 30px 0; }
+              .cta-button a { background: #4fc3f7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; }
+              .cta-button a:hover { background: #0a9cc4; }
+              .footer { padding: 20px; background: #f0f0f0; border: 1px solid #e5e7eb; border-top: none; font-size: 12px; color: #666; }
+              .footer a { color: #4fc3f7; text-decoration: none; }
+              .footer a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🏒 New Event Available</h1>
+              </div>
+              
+              <div class="content">
+                <p>Hi ${toName},</p>
+                
+                <p>A new event you subscribed to is now available for registration:</p>
+                
+                <div class="event-box">
+                  <h2>${eventTitle}</h2>
+                  <p>📅 ${eventDate}</p>
+                </div>
+                
+                <div class="cta-button">
+                  <a href="${registrationUrl}">Register Now</a>
+                </div>
+                
+                <p>Don't miss out! Click the button above to register for this event on The Pond Hockey Club's website.</p>
+              </div>
+              
+              <div class="footer">
+                <p>You received this email because you subscribed to event notifications on 512Hockey.com.</p>
+                <p>
+                  To manage your subscriptions or unsubscribe from this event type, 
+                  <a href="${unsubscribeUrl}">click here</a>.
+                </p>
+              </div>
             </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${registrationUrl}" style="background: #4fc3f7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">
-                Register Now
-              </a>
-            </div>
-            
-            <p style="font-size: 14px; color: #666; line-height: 1.6;">
-              Don't miss out! Click the button above to register for this event on The Pond Hockey Club's website.
-            </p>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-            
-            <p style="font-size: 12px; color: #999; margin: 0;">
-              You received this email because you subscribed to event notifications on 512Hockey.com.<br>
-              <a href="https://512hockey.com/events" style="color: #4fc3f7; text-decoration: none;">Manage your subscriptions</a>
-            </p>
-          </div>
-        </div>
+          </body>
+        </html>
       `,
       text: `
 New Event: ${eventTitle}
@@ -76,11 +101,14 @@ Date: ${eventDate}
 
 Register here: ${registrationUrl}
 
+---
+
 You received this email because you subscribed to event notifications on 512Hockey.com.
+To unsubscribe, visit: ${unsubscribeUrl}
       `.trim(),
     }
 
-    await sgMail.send(msg)
+    await transporter.sendMail(mailOptions)
     console.log(`✓ Email sent to ${toEmail}`)
     return true
   } catch (error) {

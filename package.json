@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.6",
     "@supabase/supabase-js": "^2.39.0",
     "boring-avatars": "^2.0.4",
     "next": "^15.3.6",
     "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "vercel": "^52.0.0"

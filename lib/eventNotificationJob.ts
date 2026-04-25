@@ -178,7 +178,8 @@ async function notifySubscriber(
   subscription: UserEventSubscription,
   eventType: EventType,
   event: DetectedEvent,
-  userEmail?: string
+  userEmail?: string,
+  allSubscriptions?: UserEventSubscription[]
 ) {
   const client = supabase
 
@@ -233,7 +234,8 @@ async function notifySubscriber(
         body: 'New event posted on The Pond Hockey Club',
         url: event.registration_url,
       },
-      userEmail
+      userEmail,
+      allSubscriptions
     )
   } catch (error) {
     console.error(`Failed to notify subscriber ${subscription.user_id}:`, error)
@@ -252,7 +254,8 @@ async function sendNotifications(
     body: string
     url: string
   },
-  userEmail?: string
+  userEmail?: string,
+  subscriptions?: UserEventSubscription[]
 ) {
   const client = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -270,12 +273,15 @@ async function sendNotifications(
 
         case 'email':
           if (userEmail) {
+            const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/events`
+
             const emailSent = await sendEventNotificationEmail({
               toEmail: userEmail,
               toName: 'Hockey Player',
               eventTitle: message.title,
               eventDate: message.subtitle,
               registrationUrl: message.url,
+              unsubscribeUrl,
             })
             if (emailSent) {
               console.log(`[EMAIL] Sent to ${userEmail}`)
