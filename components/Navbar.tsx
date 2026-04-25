@@ -69,6 +69,7 @@ export default function Navbar() {
     { href: '/directory', label: 'Players' },
     { href: '/forum', label: 'Forum' },
     { href: '/rinks', label: 'Rinks' },
+    { href: '/events', label: 'Events' },
     ...(user ? [{ href: '/messages', label: 'Messages' }] : []),
     ...(isAdmin ? [{ href: '/admin', label: '⚙️ Admin' }] : []),
   ]
