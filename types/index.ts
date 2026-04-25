@@ -121,3 +121,32 @@ export interface DetectedEvent {
   date_display: string
   registration_url: string
 }
+
+export interface EventType {
+  id: string
+  name: string
+  description?: string
+  color?: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Event {
+  id: string
+  location_id: string
+  event_type_id: string
+  title: string
+  description?: string
+  start_time: string
+  end_time?: string
+  registration_url?: string
+  source_url?: string
+  external_event_id?: string
+  scraped_at?: string
+  created_at: string
+  updated_at: string
+  // Relations
+  locations?: Location
+  event_types?: EventType
+}
