@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx puppeteer browsers install chrome && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "@puppeteer/browsers": "^2.2.0",
     "boring-avatars": "^2.0.4",
     "date-fns": "^4.1.0",
     "next": "^15.3.6",
