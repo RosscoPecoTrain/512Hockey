@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import * as cheerio from 'cheerio'
+import { chromium } from 'playwright'
 import type { Location } from '@/types'
 
 const supabase = createClient(
@@ -16,7 +16,7 @@ interface ScrapedEvent {
 
 /**
  * Scrape drop-in hockey events from DaySmart Recreation calendars
- * Uses HTML parsing instead of browser automation for Vercel compatibility
+ * Uses Playwright for better serverless compatibility
  */
 export async function scrapeDropInHockeyEvents() {
   console.log('🏒 Starting drop-in hockey scraper...')
@@ -25,6 +25,8 @@ export async function scrapeDropInHockeyEvents() {
   let eventsUpdated = 0
   let locationsScraped = 0
   let errors: string[] = []
+
+  let browser: any = null
 
   try {
     // Get all locations with daysmart_calendar_id
@@ -67,11 +69,18 @@ export async function scrapeDropInHockeyEvents() {
       eventTypeId = newEventType.id
     }
 
+    // Launch browser
+    console.log('Launching browser...')
+    browser = await chromium.launch({
+      headless: true,
+      args: ['--disable-gpu', '--single-process'],
+    })
+
     // Scrape each location's calendar
     for (const location of locations) {
       try {
         console.log(`Scraping ${location.name}...`)
-        const events = await scrapeDaySmart(location.daysmart_calendar_id)
+        const events = await scrapeDaySmart(browser, location.daysmart_calendar_id)
 
         if (!events || events.length === 0) {
           console.log(`  No events found for ${location.name}`)
@@ -127,14 +136,19 @@ export async function scrapeDropInHockeyEvents() {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error('Fatal scraper error:', errorMsg)
     throw error
+  } finally {
+    if (browser) {
+      await browser.close()
+    }
   }
 }
 
 /**
  * Scrape a single DaySmart calendar for drop-in hockey events
- * Uses cheerio for HTML parsing instead of puppeteer
  */
-async function scrapeDaySmart(calendarId: string): Promise<ScrapedEvent[]> {
+async function scrapeDaySmart(browser: any, calendarId: string): Promise<ScrapedEvent[]> {
+  const page = await browser.newPage()
+
   try {
     // Build the calendar URL
     const today = new Date()
@@ -145,21 +159,44 @@ async function scrapeDaySmart(calendarId: string): Promise<ScrapedEvent[]> {
 
     const url = `https://apps.daysmartrecreation.com/dash/x/#/online/${calendarId}/calendar?start=${startDate}&end=${endDate}&event_type=9`
 
-    console.log(`  Fetching ${url}`)
+    console.log(`  Navigating to ${url}`)
+    await page.goto(url, { waitUntil: 'networkidle' })
 
-    // DaySmart is JavaScript-heavy, so this basic fetch won't work perfectly
-    // For production, you'd need:
-    // 1. ScrapingBee API
-    // 2. Browserless service
-    // 3. Self-hosted Puppeteer
-    // For now, return empty to prevent errors
-    console.log(`  ⚠️  DaySmart requires JavaScript rendering (not supported with cheerio)`)
-    console.log(`  Please use ScrapingBee or Browserless for full scraping`)
+    // Wait for events to load
+    await page.waitForTimeout(2000)
 
-    return []
+    // Extract event information from the calendar
+    const events = await page.evaluate(() => {
+      const eventElements = document.querySelectorAll('[data-event-title]')
+      const results: ScrapedEvent[] = []
+
+      eventElements.forEach((el) => {
+        const title = el.getAttribute('data-event-title')
+        const startTimeStr = el.getAttribute('data-event-start')
+        const registrationUrl = (el as any).href
+
+        if (title && startTimeStr) {
+          // Filter for "Drop in" events
+          if (title.toLowerCase().includes('drop in') || title.toLowerCase().includes('drop-in')) {
+            results.push({
+              title,
+              startTime: new Date(startTimeStr),
+              registrationUrl,
+            })
+          }
+        }
+      })
+
+      return results
+    })
+
+    console.log(`  Extracted ${events.length} events from page`)
+    return events
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error(`Error in scrapeDaySmart: ${errorMsg}`)
     return []
+  } finally {
+    await page.close()
   }
 }
