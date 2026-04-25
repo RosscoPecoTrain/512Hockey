@@ -167,13 +167,14 @@ export default function JobsPage() {
       try {
         const { data, error } = await supabase
           .from('job_logs')
-          .select('job_name', { count: 'exact' })
-          .distinct()
+          .select('job_name')
 
         if (error) throw error
 
-        const names = data?.map((d) => d.job_name) || []
-        setJobTypes(names.sort())
+        // Get unique job names
+        const uniqueNames = [...new Set(data?.map((d) => d.job_name) || [])]
+        console.log('Fetched job names:', uniqueNames)
+        setJobTypes(uniqueNames.sort())
       } catch (error) {
         console.error('Failed to fetch job names:', error)
       }
