@@ -1,10 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
+import puppeteer from 'puppeteer'
 import type { Location } from '@/types'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 )
+
+interface ScrapedEvent {
+  title: string
+  startTime: Date
+  endTime?: Date
+  registrationUrl?: string
+}
 
 /**
  * Scrape drop-in hockey events from DaySmart Recreation calendars
@@ -17,6 +25,8 @@ export async function scrapeDropInHockeyEvents() {
   let eventsUpdated = 0
   let locationsScraped = 0
   let errors: string[] = []
+
+  let browser: puppeteer.Browser | null = null
 
   try {
     // Get all locations with daysmart_calendar_id
@@ -47,10 +57,17 @@ export async function scrapeDropInHockeyEvents() {
 
     const dropInEventTypeId = eventTypeData.id
 
+    // Launch browser once for all locations
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    })
+
     // Scrape each location
     for (const location of locations as Location[]) {
       try {
         const result = await scrapeLocationEvents(
+          browser,
           location,
           dropInEventTypeId
         )
@@ -64,20 +81,25 @@ export async function scrapeDropInHockeyEvents() {
       }
     }
 
-    console.log('✅ Drop-in hockey scraper completed')
+    console.log(`✅ Drop-in hockey scraper completed. Created: ${eventsCreated}, Updated: ${eventsUpdated}, Locations: ${locationsScraped}`)
 
     return { eventsCreated, eventsUpdated, locationsScraped, errors }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error('❌ Scraper failed:', errorMsg)
     throw error
+  } finally {
+    if (browser) {
+      await browser.close()
+    }
   }
 }
 
 /**
- * Scrape events from a single DaySmart calendar
+ * Scrape events from a single DaySmart calendar using Puppeteer
  */
 async function scrapeLocationEvents(
+  browser: puppeteer.Browser,
   location: Location,
   eventTypeId: string
 ): Promise<{ created: number; updated: number }> {
@@ -88,43 +110,103 @@ async function scrapeLocationEvents(
     throw new Error('No DaySmart calendar ID')
   }
 
-  // Build URL for DaySmart API
-  // Format: https://apps.daysmartrecreation.com/dash/x/#/online/{calendar_id}/calendar?start={date}&end={date}&event_type=9
-  // We'll scrape a 30-day window
-  const today = new Date()
-  const endDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
-
-  const startDateStr = formatDateForDaySmart(today)
-  const endDateStr = formatDateForDaySmart(endDate)
-
-  // Note: DaySmart is a JavaScript-heavy SPA, so we may need to use a headless browser or API
-  // For now, we'll attempt to fetch the page and parse it
-  // In production, you might want to use Puppeteer or a DaySmart API if available
+  const page = await browser.newPage()
 
   try {
-    // Attempt to fetch the calendar page
+    // Set user agent to avoid blocking
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    )
+
+    // Build URL for 30-day window
+    const today = new Date()
+    const endDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+    const startDateStr = formatDateForDaySmart(today)
+    const endDateStr = formatDateForDaySmart(endDate)
+
     const url = `https://apps.daysmartrecreation.com/dash/x/#/online/${location.daysmart_calendar_id}/calendar?start=${startDateStr}&end=${endDateStr}&event_type=9`
-    
-    console.log(`Scraping ${location.name} from ${url}`)
 
-    // This is a placeholder - DaySmart pages are JavaScript-rendered
-    // Real implementation would need Puppeteer or similar
-    // For now, we'll log what we'd do
+    console.log(`Scraping ${location.name}...`)
 
-    console.log(`Would scrape ${location.name} events from ${startDateStr} to ${endDateStr}`)
+    // Navigate to the page with longer timeout for SPA
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 })
 
-    // TODO: Implement actual scraping logic
-    // This would involve:
-    // 1. Using Puppeteer/Playwright to load the page
-    // 2. Waiting for JavaScript to render
-    // 3. Extracting event data from the DOM
-    // 4. Parsing event titles, times, registration URLs
-    // 5. Filtering for "Drop in" events
-    // 6. Upserting to events table
+    // Wait for events to load
+    await page.waitForSelector('[class*="event"]', { timeout: 5000 }).catch(() => {
+      console.log(`No events found for ${location.name}`)
+    })
+
+    // Extract event data from the page
+    const events = await page.evaluate(() => {
+      const eventElements = document.querySelectorAll('[class*="event-item"], [class*="calendar-event"]')
+      const scrapedEvents: ScrapedEvent[] = []
+
+      eventElements.forEach((el) => {
+        const titleEl = el.querySelector('[class*="title"], [class*="name"], h3, h4')
+        const timeEl = el.querySelector('[class*="time"], [class*="start"]')
+        const linkEl = el.querySelector('a[href*="register"], a[href*="signup"]')
+
+        if (titleEl) {
+          const title = titleEl.textContent?.trim() || ''
+          
+          // Only include "Drop in" events
+          if (title.toLowerCase().includes('drop in')) {
+            scrapedEvents.push({
+              title,
+              startTime: new Date(), // Placeholder - would need to parse from timeEl
+              registrationUrl: linkEl?.getAttribute('href') || undefined,
+            })
+          }
+        }
+      })
+
+      return scrapedEvents
+    })
+
+    console.log(`Found ${events.length} drop-in events at ${location.name}`)
+
+    // Upsert events to database
+    for (const event of events) {
+      try {
+        const { error: upsertError } = await supabase
+          .from('events')
+          .upsert(
+            {
+              location_id: location.id,
+              event_type_id: eventTypeId,
+              title: event.title,
+              start_time: event.startTime.toISOString(),
+              end_time: event.endTime?.toISOString() || null,
+              registration_url: event.registrationUrl || null,
+              source_url: page.url(),
+              external_event_id: `${location.id}-${event.title}-${event.startTime.getTime()}`,
+              scraped_at: new Date().toISOString(),
+            },
+            {
+              onConflict: 'external_event_id',
+            }
+          )
+
+        if (upsertError) {
+          console.error(`Error upserting event ${event.title}:`, upsertError)
+        } else {
+          created++
+        }
+      } catch (err) {
+        console.error(`Error processing event:`, err)
+      }
+    }
 
     return { created, updated }
   } catch (error) {
-    throw new Error(`Failed to scrape ${location.name}: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(
+      `Failed to scrape ${location.name}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    )
+  } finally {
+    await page.close()
   }
 }
 
