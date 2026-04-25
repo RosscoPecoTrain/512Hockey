@@ -23,23 +23,22 @@ interface JobConfig {
 export async function executeJob(jobConfig: JobConfig) {
   const startTime = new Date()
 
-  console.log(`Executing job: ${jobConfig.job_name} (${jobConfig.job_type})`)
+  console.log(`Executing job: ${jobConfig.job_name} (type: ${jobConfig.job_type})`)
 
   try {
     let result: any = null
 
-    switch (jobConfig.job_type) {
-      case 'event_notification':
-        result = await checkForNewEventPostings()
-        break
-      case 'job_cleanup':
-        result = await cleanupOldLogs(90)
-        break
-      case 'drop_in_scraper':
-        result = await scrapeDropInHockeyEvents()
-        break
-      default:
-        throw new Error(`Unknown job type: ${jobConfig.job_type}`)
+    // Normalize job type for matching
+    const jobType = (jobConfig.job_type || '').toLowerCase().trim()
+
+    if (jobType === 'event_notification') {
+      result = await checkForNewEventPostings()
+    } else if (jobType === 'job_cleanup') {
+      result = await cleanupOldLogs(90)
+    } else if (jobType === 'drop_in_scraper') {
+      result = await scrapeDropInHockeyEvents()
+    } else {
+      throw new Error(`Unknown job type '${jobConfig.job_type}' for job '${jobConfig.job_name}'`)
     }
 
     const endTime = new Date()

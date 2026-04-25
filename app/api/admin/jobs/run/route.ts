@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { checkForNewEventPostings } from '@/lib/eventNotificationJob'
 import { cleanupOldLogs } from '@/lib/jobLogger'
+import { scrapeDropInHockeyEvents } from '@/lib/dropInScraper'
 import { logJobRun } from '@/lib/jobLogger'
 
 const supabase = createClient(
@@ -39,6 +40,11 @@ export async function POST(request: NextRequest) {
 
         case 'job-log-cleanup':
           const deletedCount = await cleanupOldLogs(90)
+          success = true
+          break
+
+        case 'scrape-drop-in-hockey':
+          await scrapeDropInHockeyEvents()
           success = true
           break
 
