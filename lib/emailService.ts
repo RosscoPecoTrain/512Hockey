@@ -85,11 +85,8 @@ export async function sendEventNotificationEmail({
               </div>
               
               <div class="footer">
+                <p><strong>Please do not reply to this email.</strong> This inbox is not monitored. To manage your subscriptions, visit <a href="${unsubscribeUrl}">512Hockey.com/events</a>.</p>
                 <p>You received this email because you subscribed to event notifications on 512Hockey.com.</p>
-                <p>
-                  To manage your subscriptions or unsubscribe from this event type, 
-                  <a href="${unsubscribeUrl}">click here</a>.
-                </p>
               </div>
             </div>
           </body>
@@ -103,8 +100,11 @@ Register here: ${registrationUrl}
 
 ---
 
+PLEASE DO NOT REPLY TO THIS EMAIL. This inbox is not monitored.
+
+To manage your subscriptions, visit: ${unsubscribeUrl}
+
 You received this email because you subscribed to event notifications on 512Hockey.com.
-To unsubscribe, visit: ${unsubscribeUrl}
       `.trim(),
     }
 
