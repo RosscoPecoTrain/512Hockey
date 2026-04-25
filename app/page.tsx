@@ -13,13 +13,25 @@ export default function Home() {
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // Set timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 5000)
+        )
+
+        const authPromise = supabase.auth.getUser()
+
+        const { data: { user }, error } = await Promise.race([
+          authPromise,
+          timeoutPromise as any,
+        ])
+
         if (error) {
           console.error('Auth error:', error)
         }
         setUser(user || null)
       } catch (err) {
         console.error('Failed to get user:', err)
+        setUser(null)
       } finally {
         setIsLoading(false)
       }
@@ -48,7 +60,7 @@ export default function Home() {
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               {isLoading ? (
-                <p>Loading...</p>
+                <p className="text-gray-300">Loading...</p>
               ) : user ? (
                 <>
                   <Link
