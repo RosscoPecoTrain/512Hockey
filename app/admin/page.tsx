@@ -379,12 +379,9 @@ export default function AdminPage() {
 
       {/* Jobs */}
       {tab === 'jobs' && (
-        <iframe
-          src="/admin/jobs"
-          className="w-full border-0 rounded-lg"
-          style={{ height: '800px' }}
-          title="Job Logs"
-        />
+        <div className="bg-white dark:bg-[#161b22] rounded-lg border border-gray-200 dark:border-[#30363d] p-6">
+          <p className="text-gray-600 dark:text-[#8b949e]">Job logs dashboard coming soon. <a href="/admin/jobs" className="text-[#4fc3f7] hover:underline">View logs here</a></p>
+        </div>
       )}
 
       {/* Users */}
