@@ -1,11 +1,13 @@
 import nodemailer from 'nodemailer'
 
-// Create transporter for Gmail
+// Create transporter for Yahoo SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.mail.yahoo.com',
+  port: 465,
+  secure: true, // SSL
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: process.env.YAHOO_EMAIL,
+    pass: process.env.YAHOO_PASSWORD,
   },
 })
 
@@ -29,14 +31,14 @@ export async function sendEventNotificationEmail({
   registrationUrl,
   unsubscribeUrl,
 }: EmailNotificationParams) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.warn('⚠️  Gmail credentials not configured, skipping email')
+  if (!process.env.YAHOO_EMAIL || !process.env.YAHOO_PASSWORD) {
+    console.warn('⚠️  Yahoo email credentials not configured, skipping email')
     return false
   }
 
   try {
     const mailOptions = {
-      from: `512Hockey <${process.env.GMAIL_USER}>`,
+      from: `512Hockey <${process.env.YAHOO_EMAIL}>`,
       to: toEmail,
       subject: `🏒 ${eventTitle} - Registration Now Open`,
       html: `
