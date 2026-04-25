@@ -430,7 +430,7 @@ export default function JobsPage() {
                             onClick={() => handleSort('nextRun')}
                             className="flex items-center gap-2 hover:text-gray-900 cursor-pointer"
                           >
-                            Next Run <SortIndicator column="nextRun" />
+                            Next Start Date <SortIndicator column="nextRun" />
                           </button>
                         </th>
                         <th className="px-6 py-3 text-right font-medium text-gray-700">
