@@ -8,7 +8,7 @@ export interface Profile {
   avatar_url?: string
   leagues?: string[]
   phone?: string
-  preferred_rinks?: string[]
+  preferred_location_ids?: string[]
   created_at: string
   updated_at: string
 }
@@ -46,11 +46,14 @@ export interface ForumReply {
   updated_at: string
 }
 
-export interface Rink {
+export interface Location {
   id: string
   name: string
   address?: string
   city?: string
+  state?: string
+  zip?: string
+  location_type: 'rink' | 'arena' | 'bar' | 'practice' | string
   website_url?: string
   booking_url?: string
   description?: string
@@ -58,63 +61,14 @@ export interface Rink {
   updated_at: string
 }
 
-export interface EventType {
-  id: string
-  name: string
-  location: string
-  rink: string
-  source_type: 'shopify' | 'api' | 'website'
-  source_url: string
-  source_pattern: string
-  last_detected_event_id?: string
-  last_detected_event_title?: string
-  last_detected_event_date?: string
-  last_detected_at?: string
-  last_check_at?: string
-  last_check_status?: 'success' | 'error' | 'no_new_events'
-  last_check_error?: string
-  active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface UserEventSubscription {
-  id: string
-  user_id: string
-  event_type_id: string
-  notify_via: string[] // ['push', 'email', 'sms']
-  active: boolean
-  subscribed_at: string
-  updated_at: string
-}
-
-export interface EventNotification {
-  id: string
-  user_id: string
-  event_type_id: string
-  detected_event_id: string
-  detected_event_title: string
-  detected_event_date: string
-  registration_url: string
-  notify_channels: string[]
-  sent_at: string
-  delivery_status: Record<string, string>
-  created_at: string
-}
-
-export interface DetectedEvent {
-  id: string
-  title: string
-  date: string
-  date_display: string
-  registration_url: string
-}
+/** @deprecated Use Location instead */
+export type Rink = Location
 
 export interface EventType {
   id: string
   name: string
   location: string
-  rink: string
+  location_id?: string
   source_type: 'shopify' | 'api' | 'website'
   source_url: string
   source_pattern: string

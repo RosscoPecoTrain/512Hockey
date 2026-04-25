@@ -2,27 +2,31 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Rink } from '@/types'
+import type { Location } from '@/types'
 
 export default function Rinks() {
-  const [rinks, setRinks] = useState<Rink[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchRinks = async () => {
+    const fetchLocations = async () => {
       try {
-        const { data, error } = await supabase.from('rinks').select('*').order('sort_order', { ascending: true })
+        const { data, error } = await supabase
+          .from('locations')
+          .select('*')
+          .eq('location_type', 'rink')
+          .order('name', { ascending: true })
 
         if (error) throw error
-        setRinks(data || [])
+        setLocations(data || [])
       } catch (error) {
-        console.error('Error fetching rinks:', error)
+        console.error('Error fetching locations:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchRinks()
+    fetchLocations()
   }, [])
 
   return (
@@ -36,32 +40,32 @@ export default function Rinks() {
         <p className="text-gray-600 dark:text-[#8b949e]">Loading rinks...</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rinks.map((rink) => (
+          {locations.map((location) => (
             <div
-              key={rink.id}
+              key={location.id}
               className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none border border-gray-200 dark:border-[#30363d] hover:border-[#4fc3f7] hover:shadow-lg dark:shadow-none transition overflow-hidden"
             >
               <div className="bg-gradient-to-r from-[#0a1628] to-[#1a2f4a] text-white p-6">
-                <h3 className="text-2xl font-bold">{rink.name}</h3>
+                <h3 className="text-2xl font-bold">{location.name}</h3>
               </div>
               <div className="p-6">
-                {rink.address && (
+                {location.address && (
                   <p className="text-gray-600 dark:text-[#8b949e] mb-2">
-                    <span className="font-medium text-[#0a1628] dark:text-[#e6edf3]">Location:</span> {rink.address}
+                    <span className="font-medium text-[#0a1628] dark:text-[#e6edf3]">Location:</span> {location.address}
                   </p>
                 )}
-                {rink.city && (
+                {location.city && (
                   <p className="text-gray-600 dark:text-[#8b949e] mb-4">
-                    <span className="font-medium text-[#0a1628] dark:text-[#e6edf3]">City:</span> {rink.city}
+                    <span className="font-medium text-[#0a1628] dark:text-[#e6edf3]">City:</span> {location.city}
                   </p>
                 )}
-                {rink.description && (
-                  <p className="text-gray-700 dark:text-[#e6edf3] mb-4">{rink.description}</p>
+                {location.description && (
+                  <p className="text-gray-700 dark:text-[#e6edf3] mb-4">{location.description}</p>
                 )}
                 <div className="flex gap-3 mt-6">
-                  {rink.website_url && (
+                  {location.website_url && (
                     <a
-                      href={rink.website_url}
+                      href={location.website_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-2 rounded font-semibold text-center hover:bg-white transition"
@@ -69,9 +73,9 @@ export default function Rinks() {
                       Visit Website
                     </a>
                   )}
-                  {rink.booking_url && rink.booking_url !== rink.website_url && (
+                  {location.booking_url && location.booking_url !== location.website_url && (
                     <a
-                      href={rink.booking_url}
+                      href={location.booking_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 border-2 border-[#4fc3f7] text-[#4fc3f7] px-4 py-2 rounded font-semibold text-center hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition"
