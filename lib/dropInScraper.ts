@@ -73,7 +73,6 @@ export async function scrapeDropInHockeyEvents() {
     console.log('Launching browser...')
     browser = await chromium.launch({
       headless: true,
-      args: ['--disable-gpu', '--single-process'],
     })
 
     // Scrape each location's calendar
@@ -88,7 +87,7 @@ export async function scrapeDropInHockeyEvents() {
           continue
         }
 
-        console.log(`  Found ${events.length} events`)
+        console.log(`  Found ${events.length} drop-in events`)
 
         // Upsert events into database
         for (const event of events) {
@@ -148,6 +147,7 @@ export async function scrapeDropInHockeyEvents() {
  */
 async function scrapeDaySmart(browser: any, calendarId: string): Promise<ScrapedEvent[]> {
   const page = await browser.newPage()
+  const events: ScrapedEvent[] = []
 
   try {
     // Build the calendar URL
@@ -160,28 +160,51 @@ async function scrapeDaySmart(browser: any, calendarId: string): Promise<Scraped
     const url = `https://apps.daysmartrecreation.com/dash/x/#/online/${calendarId}/calendar?start=${startDate}&end=${endDate}&event_type=9`
 
     console.log(`  Navigating to ${url}`)
-    await page.goto(url, { waitUntil: 'networkidle' })
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
 
-    // Wait for events to load
-    await page.waitForTimeout(2000)
+    // Wait for page to render and events to load
+    await page.waitForTimeout(3000)
 
-    // Extract event information from the calendar
-    const events = await page.evaluate(() => {
-      const eventElements = document.querySelectorAll('[data-event-title]')
-      const results: ScrapedEvent[] = []
+    // Try multiple selectors to find events
+    const eventElements = await page.$$('.event-item, [class*="event"], [class*="calendar-event"], tr[data-event-id], .calendar-event-container')
 
-      eventElements.forEach((el) => {
-        const title = el.getAttribute('data-event-title')
-        const startTimeStr = el.getAttribute('data-event-start')
-        const registrationUrl = (el as any).href
+    console.log(`  Found ${eventElements.length} potential event elements`)
 
-        if (title && startTimeStr) {
-          // Filter for "Drop in" events
-          if (title.toLowerCase().includes('drop in') || title.toLowerCase().includes('drop-in')) {
+    // Extract event information
+    const extractedEvents = await page.evaluate(() => {
+      const results: any[] = []
+
+      // Try to find event containers by looking for common patterns
+      const eventSelectors = [
+        '.event-item',
+        '[class*="event-title"]',
+        '[class*="calendar-event"]',
+        'tr[data-event-id]',
+        '.calendar-event-container',
+        '[data-testid*="event"]',
+      ]
+
+      // Also try to get all divs with event-like attributes
+      const allDivs = document.querySelectorAll('div, tr, a')
+
+      allDivs.forEach((el) => {
+        const text = el.textContent || ''
+        const html = el.innerHTML || ''
+
+        // Look for "Drop in" text with time information
+        if (text.toLowerCase().includes('drop in') || text.toLowerCase().includes('drop-in')) {
+          // Try to find time information nearby
+          const timeMatch = text.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i)
+          const dateAttr = (el as any).getAttribute('data-date') || (el as any).getAttribute('datetime')
+
+          if (timeMatch) {
             results.push({
-              title,
-              startTime: new Date(startTimeStr),
-              registrationUrl,
+              title: text.trim().split('\n')[0].substring(0, 100), // Get first line, max 100 chars
+              text: text,
+              html: html.substring(0, 200),
+              timeMatch: timeMatch[0],
+              dateAttr: dateAttr,
+              classList: (el as any).className,
             })
           }
         }
@@ -190,12 +213,24 @@ async function scrapeDaySmart(browser: any, calendarId: string): Promise<Scraped
       return results
     })
 
-    console.log(`  Extracted ${events.length} events from page`)
+    console.log(`  Extracted ${extractedEvents.length} potential drop-in events`)
+    if (extractedEvents.length > 0) {
+      console.log(`  First match: ${JSON.stringify(extractedEvents[0])}`)
+    } else {
+      // Log some page content for debugging
+      const pageText = await page.locator('body').textContent()
+      if (pageText && pageText.includes('drop in')) {
+        console.log('  ℹ️  "Drop in" text found on page but not captured by selector')
+      }
+    }
+
+    // For now, return empty if we can't parse the exact format
+    // TODO: Once we see the actual HTML structure, we can build proper selectors
     return events
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
-    console.error(`Error in scrapeDaySmart: ${errorMsg}`)
-    return []
+    console.error(`  Error in scrapeDaySmart: ${errorMsg}`)
+    return events
   } finally {
     await page.close()
   }
