@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const { data: eventTypes, error } = await supabase
       .from('event_types')
-      .select('*')
+      .select('*, locations(name)')
       .eq('active', true)
       .order('name')
 
@@ -18,7 +18,13 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    return NextResponse.json({ event_types: eventTypes }, { status: 200 })
+    // Map locations.name to rink for backward compatibility
+    const eventTypesWithRink = eventTypes?.map((et: any) => ({
+      ...et,
+      rink: et.locations?.name || et.location,
+    })) || []
+
+    return NextResponse.json({ event_types: eventTypesWithRink }, { status: 200 })
   } catch (error) {
     console.error('GET event types failed:', error)
     return NextResponse.json(
@@ -39,13 +45,13 @@ export async function POST(request: NextRequest) {
     const {
       name,
       location,
-      rink,
+      location_id,
       source_type,
       source_url,
       source_pattern,
     } = body
 
-    if (!name || !location || !rink || !source_type || !source_url || !source_pattern) {
+    if (!name || !location || !source_type || !source_url || !source_pattern) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -58,21 +64,27 @@ export async function POST(request: NextRequest) {
         {
           name,
           location,
-          rink,
+          location_id,
           source_type,
           source_url,
           source_pattern,
           active: true,
         },
       ])
-      .select()
+      .select('*, locations(name)')
       .single()
 
     if (error) {
       throw error
     }
 
-    return NextResponse.json({ event_type: eventType }, { status: 201 })
+    // Map locations.name to rink for backward compatibility
+    const eventTypeWithRink = {
+      ...eventType,
+      rink: eventType.locations?.name || eventType.location,
+    }
+
+    return NextResponse.json({ event_type: eventTypeWithRink }, { status: 201 })
   } catch (error) {
     console.error('POST event type failed:', error)
     return NextResponse.json(
