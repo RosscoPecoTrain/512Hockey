@@ -80,28 +80,23 @@ export async function scrapeDropInHockeyEvents() {
       try {
         console.log(`Processing ${location.name}...`)
 
-        // Upsert demo events
+        // Insert demo events
         for (const event of demoEvents) {
-          const { error: upsertError } = await supabase
+          const { error: insertError } = await supabase
             .from('events')
-            .upsert(
-              {
-                location_id: location.id,
-                event_type_id: eventTypeId,
-                title: event.title,
-                start_time: event.startTime.toISOString(),
-                end_time: event.endTime?.toISOString(),
-                registration_url: event.registrationUrl,
-                scraped_at: new Date().toISOString(),
-              },
-              {
-                onConflict: 'location_id,event_type_id,start_time',
-              }
-            )
+            .insert({
+              location_id: location.id,
+              event_type_id: eventTypeId,
+              title: event.title,
+              start_time: event.startTime.toISOString(),
+              end_time: event.endTime?.toISOString(),
+              registration_url: event.registrationUrl,
+              scraped_at: new Date().toISOString(),
+            })
 
-          if (upsertError) {
-            console.error(`  Error: ${upsertError.message}`)
-            errors.push(`${location.name}: ${upsertError.message}`)
+          if (insertError) {
+            console.error(`  Error: ${insertError.message}`)
+            errors.push(`${location.name}: ${insertError.message}`)
           } else {
             eventsCreated++
           }
