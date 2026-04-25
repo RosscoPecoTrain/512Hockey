@@ -8,7 +8,11 @@ import type { Event, Location } from '@/types'
 
 interface EventWithLocation extends Event {
   locations: Location
+  event_types: { id: string; name: string }
 }
+
+type SortField = 'start_time' | 'title' | 'locations.name'
+type SortDirection = 'asc' | 'desc'
 
 export default function EventsPage() {
   const router = useRouter()
@@ -17,6 +21,8 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedLocation, setSelectedLocation] = useState<string>('all')
   const [locations, setLocations] = useState<Location[]>([])
+  const [sortField, setSortField] = useState<SortField>('start_time')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
   // Check authentication
   useEffect(() => {
@@ -72,14 +78,52 @@ export default function EventsPage() {
 
   // Filter events by location
   useEffect(() => {
-    if (selectedLocation === 'all') {
-      setFilteredEvents(events)
-    } else {
-      setFilteredEvents(
-        events.filter((evt) => evt.location_id === selectedLocation)
-      )
+    let filtered = events
+    
+    if (selectedLocation !== 'all') {
+      filtered = events.filter((evt) => evt.location_id === selectedLocation)
     }
-  }, [selectedLocation, events])
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal: any = a[sortField]
+      let bVal: any = b[sortField]
+
+      if (sortField === 'locations.name') {
+        aVal = a.locations?.name
+        bVal = b.locations?.name
+      }
+
+      if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase()
+        bVal = bVal.toLowerCase()
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+
+    setFilteredEvents(sorted)
+  }, [selectedLocation, events, sortField, sortDirection])
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const SortIndicator = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return null
+    return (
+      <span className="ml-1">
+        {sortDirection === 'asc' ? '↑' : '↓'}
+      </span>
+    )
+  }
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -98,7 +142,7 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2 text-[#0a1628] dark:text-[#e6edf3]">
           🏒 Drop-In Hockey Games
@@ -142,7 +186,7 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* Events List */}
+      {/* Events Table */}
       {isLoading ? (
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400">Loading events...</p>
@@ -154,71 +198,86 @@ export default function EventsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredEvents.map((event) => {
-            const { date, time } = formatDateTime(event.start_time)
-            return (
-              <div
-                key={event.id}
-                className="bg-white dark:bg-[#161b22] rounded-lg shadow-md dark:shadow-none border border-gray-200 dark:border-[#30363d] hover:border-[#4fc3f7] hover:shadow-lg transition p-6"
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-[#0a1628] dark:text-[#e6edf3] mb-2">
-                      {event.title}
-                    </h3>
-                    <div className="space-y-1 text-gray-600 dark:text-[#8b949e]">
-                      <p>
-                        <span className="font-medium">📍 Location:</span>{' '}
+        <div className="overflow-x-auto border border-gray-200 dark:border-[#30363d] rounded-lg">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 dark:bg-[#0d1117] border-b border-gray-200 dark:border-[#30363d]">
+              <tr>
+                <th className="px-6 py-3 font-semibold text-gray-900 dark:text-[#e6edf3] cursor-pointer hover:bg-gray-100 dark:hover:bg-[#161b22]" onClick={() => handleSort('title')}>
+                  Event <SortIndicator field="title" />
+                </th>
+                <th className="px-6 py-3 font-semibold text-gray-900 dark:text-[#e6edf3] cursor-pointer hover:bg-gray-100 dark:hover:bg-[#161b22]" onClick={() => handleSort('locations.name')}>
+                  Rink <SortIndicator field="locations.name" />
+                </th>
+                <th className="px-6 py-3 font-semibold text-gray-900 dark:text-[#e6edf3] cursor-pointer hover:bg-gray-100 dark:hover:bg-[#161b22]" onClick={() => handleSort('start_time')}>
+                  Date & Time <SortIndicator field="start_time" />
+                </th>
+                <th className="px-6 py-3 font-semibold text-gray-900 dark:text-[#e6edf3] text-center">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-[#30363d]">
+              {filteredEvents.map((event) => {
+                const { date, time } = formatDateTime(event.start_time)
+                return (
+                  <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-[#161b22] transition">
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-gray-900 dark:text-[#e6edf3]">
+                        {event.title}
+                      </p>
+                      {event.description && (
+                        <p className="text-xs text-gray-500 dark:text-[#8b949e] mt-1">
+                          {event.description}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-gray-900 dark:text-[#e6edf3]">
                         {event.locations?.name}
                       </p>
-                      <p>
-                        <span className="font-medium">📅 Date:</span> {date}
-                      </p>
-                      <p>
-                        <span className="font-medium">🕒 Time:</span> {time}
-                      </p>
                       {event.locations?.city && (
-                        <p>
-                          <span className="font-medium">🏙️ City:</span>{' '}
+                        <p className="text-xs text-gray-500 dark:text-[#8b949e]">
                           {event.locations.city}
                         </p>
                       )}
-                    </div>
-
-                    {event.description && (
-                      <p className="text-gray-700 dark:text-[#e6edf3] mt-3">
-                        {event.description}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-gray-900 dark:text-[#e6edf3]">
+                        {date}
                       </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    {event.registration_url && (
-                      <a
-                        href={event.registration_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-6 py-2 rounded-lg font-semibold hover:bg-white transition whitespace-nowrap"
-                      >
-                        Register
-                      </a>
-                    )}
-                    {event.locations?.website_url && (
-                      <a
-                        href={event.locations.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border-2 border-[#4fc3f7] text-[#4fc3f7] px-6 py-2 rounded-lg font-semibold hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition whitespace-nowrap"
-                      >
-                        Rink Info
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+                      <p className="text-sm text-gray-600 dark:text-[#8b949e]">
+                        {time}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex gap-2 justify-center">
+                        {event.registration_url && (
+                          <a
+                            href={event.registration_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#4fc3f7] text-[#0a1628] dark:text-[#e6edf3] px-4 py-1 rounded font-medium hover:bg-white transition text-xs"
+                          >
+                            Register
+                          </a>
+                        )}
+                        {event.locations?.website_url && (
+                          <a
+                            href={event.locations.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border border-[#4fc3f7] text-[#4fc3f7] px-4 py-1 rounded font-medium hover:bg-[#4fc3f7] hover:text-[#0a1628] dark:text-[#e6edf3] transition text-xs"
+                          >
+                            Rink Info
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
