@@ -1,6 +1,7 @@
 import cron from 'node-cron'
 import { checkForNewEventPostings } from './eventNotificationJob'
 import { cleanupOldLogs } from './jobLogger'
+import { scrapeDropInHockeyEvents } from './dropInScraper'
 
 let cronInitialized = false
 
@@ -37,4 +38,22 @@ export function initializeCronJobs() {
   })
 
   console.log('✓ Job log cleanup cron job initialized (daily at 2 AM)')
+
+  // Run every 6 hours: scrape drop-in hockey events
+  cron.schedule('0 */6 * * *', async () => {
+    console.log('🏒 Running drop-in hockey scraper...')
+    try {
+      const result = await scrapeDropInHockeyEvents()
+      console.log(
+        `✅ Drop-in hockey scraper completed: Created ${result.eventsCreated}, Updated ${result.eventsUpdated}, Locations ${result.locationsScraped}`
+      )
+      if (result.errors.length > 0) {
+        console.warn('⚠️  Scraper errors:', result.errors)
+      }
+    } catch (error) {
+      console.error('❌ Drop-in hockey scraper failed:', error)
+    }
+  })
+
+  console.log('✓ Drop-in hockey scraper cron job initialized (every 6 hours)')
 }
