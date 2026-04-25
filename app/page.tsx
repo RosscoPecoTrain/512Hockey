@@ -12,9 +12,17 @@ export default function Home() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setIsLoading(false)
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          console.error('Auth error:', error)
+        }
+        setUser(user || null)
+      } catch (err) {
+        console.error('Failed to get user:', err)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     getUser()
