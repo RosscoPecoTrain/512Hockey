@@ -588,9 +588,9 @@ export default function JobsPage() {
                       <tr>
                         <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('job_name_logs'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Job {logSortKey === 'job_name_logs' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
                         <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('status'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Status {logSortKey === 'status' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
-                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('duration_ms'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Duration {logSortKey === 'duration_ms' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
                         <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('started_at'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Start Date {logSortKey === 'started_at' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
                         <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('completed_at'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>End Date {logSortKey === 'completed_at' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-200" onClick={() => { setLogSortKey('duration_ms'); setLogSortDir(logSortDir === 'asc' ? 'desc' : 'asc'); }}>Duration {logSortKey === 'duration_ms' && (logSortDir === 'asc' ? '↑' : '↓')}</th>
                         <th className="px-6 py-3 text-right font-medium text-gray-700">
                           Action
                         </th>
@@ -625,14 +625,14 @@ export default function JobsPage() {
                               {log.status}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-gray-600">
-                            {log.duration_ms ? `${log.duration_ms}ms` : '-'}
-                          </td>
                           <td className="px-6 py-3 text-gray-600 text-xs">
                             {new Date(log.started_at).toLocaleString()}
                           </td>
                           <td className="px-6 py-3 text-gray-600 text-xs">
                             {log.completed_at ? new Date(log.completed_at).toLocaleString() : '-'}
+                          </td>
+                          <td className="px-6 py-3 text-gray-600">
+                            {log.duration_ms ? `${log.duration_ms}ms` : '-'}
                           </td>
                           <td className="px-6 py-3 text-right">
                             <button
