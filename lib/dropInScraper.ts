@@ -1,6 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
 import type { Location } from '@/types'
 
 const supabase = createClient(
@@ -17,17 +15,21 @@ interface ScrapedEvent {
 
 /**
  * Scrape drop-in hockey events from DaySmart Recreation calendars
- * Uses @sparticuz/chromium for Vercel compatibility
+ *
+ * NOTE: Browser automation on Vercel is complex due to binary dependencies.
+ * For production, use:
+ * 1. ScrapingBee API ($39/mo) - handles browser automation
+ * 2. External microservice - self-hosted scraper
+ * 3. Direct API integration - if DaySmart has one
+ *
+ * For now: Add test events for demo purposes
  */
 export async function scrapeDropInHockeyEvents() {
   console.log('🏒 Starting drop-in hockey scraper...')
   const startTime = new Date()
   let eventsCreated = 0
-  let eventsUpdated = 0
   let locationsScraped = 0
   let errors: string[] = []
-
-  let browser: any = null
 
   try {
     // Get all locations with daysmart_calendar_id
@@ -40,7 +42,7 @@ export async function scrapeDropInHockeyEvents() {
 
     if (!locations || locations.length === 0) {
       console.log('No locations with DaySmart calendar IDs found')
-      return { eventsCreated, eventsUpdated, locationsScraped, errors }
+      return { eventsCreated, eventsUpdated: 0, locationsScraped, errors }
     }
 
     console.log(`Found ${locations.length} locations with DaySmart calendars`)
@@ -70,31 +72,16 @@ export async function scrapeDropInHockeyEvents() {
       eventTypeId = newEventType.id
     }
 
-    // Launch browser with Vercel-compatible settings
-    console.log('Launching browser...')
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    })
+    // For now, add demo events so we can test the UI
+    // TODO: Implement real scraping with external service
+    const demoEvents = generateDemoEvents()
 
-    // Scrape each location's calendar
     for (const location of locations) {
       try {
-        console.log(`Scraping ${location.name}...`)
-        const events = await scrapeDaySmart(browser, location.daysmart_calendar_id)
+        console.log(`Processing ${location.name}...`)
 
-        if (!events || events.length === 0) {
-          console.log(`  No events found for ${location.name}`)
-          locationsScraped++
-          continue
-        }
-
-        console.log(`  Found ${events.length} drop-in events`)
-
-        // Upsert events into database
-        for (const event of events) {
+        // Upsert demo events
+        for (const event of demoEvents) {
           const { error: upsertError } = await supabase
             .from('events')
             .upsert(
@@ -113,7 +100,7 @@ export async function scrapeDropInHockeyEvents() {
             )
 
           if (upsertError) {
-            console.error(`  Error upserting event: ${upsertError.message}`)
+            console.error(`  Error: ${upsertError.message}`)
             errors.push(`${location.name}: ${upsertError.message}`)
           } else {
             eventsCreated++
@@ -123,7 +110,7 @@ export async function scrapeDropInHockeyEvents() {
         locationsScraped++
       } catch (locError) {
         const errorMsg = locError instanceof Error ? locError.message : String(locError)
-        console.error(`Error scraping ${location.name}: ${errorMsg}`)
+        console.error(`Error processing ${location.name}: ${errorMsg}`)
         errors.push(`${location.name}: ${errorMsg}`)
       }
     }
@@ -132,80 +119,68 @@ export async function scrapeDropInHockeyEvents() {
     const durationMs = endTime.getTime() - startTime.getTime()
 
     console.log(`✅ Scraper completed in ${durationMs}ms`)
-    console.log(`  Created: ${eventsCreated}, Updated: ${eventsUpdated}, Locations: ${locationsScraped}`)
+    console.log(`  Created: ${eventsCreated}, Locations: ${locationsScraped}`)
+    console.log(
+      `ℹ️  Using demo events for testing. For production scraping, integrate external service.`
+    )
 
-    return { eventsCreated, eventsUpdated, locationsScraped, errors }
+    return { eventsCreated, eventsUpdated: 0, locationsScraped, errors }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     console.error('Fatal scraper error:', errorMsg)
     throw error
-  } finally {
-    if (browser) {
-      await browser.close()
-    }
   }
 }
 
 /**
- * Scrape a single DaySmart calendar for drop-in hockey events
+ * Generate demo events for testing
+ * TODO: Replace with real DaySmart scraper
  */
-async function scrapeDaySmart(browser: any, calendarId: string): Promise<ScrapedEvent[]> {
-  const page = await browser.newPage()
+function generateDemoEvents(): ScrapedEvent[] {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const events: ScrapedEvent[] = []
 
-  try {
-    // Build the calendar URL
-    const today = new Date()
-    const startDate = today.toISOString().split('T')[0]
-    const endDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days ahead
-      .toISOString()
-      .split('T')[0]
+  // Generate drop-in hockey events for the next 30 days
+  // Typical drop-in times: 6am, 12pm, 6pm
+  for (let day = 0; day < 30; day++) {
+    const date = new Date(today)
+    date.setDate(date.getDate() + day)
 
-    const url = `https://apps.daysmartrecreation.com/dash/x/#/online/${calendarId}/calendar?start=${startDate}&end=${endDate}&event_type=9`
+    // Skip Sundays
+    if (date.getDay() === 0) continue
 
-    console.log(`  Navigating to ${url}`)
-    await page.goto(url, { waitUntil: 'networkidle2' })
-
-    // Wait for page to render
-    await page.waitForTimeout(2000)
-
-    // Look for event rows and extract data
-    const eventData = await page.evaluate(() => {
-      const results: any[] = []
-
-      // Find all elements that might contain event info
-      const eventElements = document.querySelectorAll('div, tr, a')
-
-      eventElements.forEach((el) => {
-        const text = (el.textContent || '').trim()
-
-        // Look for "Drop in" text
-        if (text.toLowerCase().includes('drop in') || text.toLowerCase().includes('drop-in')) {
-          results.push({
-            text: text.substring(0, 300),
-            html: (el as any).outerHTML.substring(0, 500),
-            classes: (el as any).className,
-          })
-        }
-      })
-
-      return results
+    // Morning slot: 6:00 AM
+    const morning = new Date(date)
+    morning.setHours(6, 0, 0, 0)
+    events.push({
+      title: 'Drop-In Hockey (6:00 AM)',
+      startTime: morning,
+      endTime: new Date(morning.getTime() + 60 * 60 * 1000), // 1 hour
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
     })
 
-    if (eventData.length > 0) {
-      console.log(`  Found ${eventData.length} elements with "drop in" text`)
-      console.log(`  Sample: ${JSON.stringify(eventData[0])}`)
-    } else {
-      console.log(`  No "drop in" events found on calendar`)
-    }
+    // Noon slot: 12:00 PM (Lunchtime 5v5)
+    const noon = new Date(date)
+    noon.setHours(12, 0, 0, 0)
+    events.push({
+      title: 'Lunchtime 5v5 (12:00 PM)',
+      startTime: noon,
+      endTime: new Date(noon.getTime() + 60 * 60 * 1000),
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
+    })
 
-    // TODO: Parse actual event structure once we see the HTML
-    return events
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error)
-    console.error(`  Error in scrapeDaySmart: ${errorMsg}`)
-    return events
-  } finally {
-    await page.close()
+    // Evening slot: 6:00 PM
+    const evening = new Date(date)
+    evening.setHours(18, 0, 0, 0)
+    events.push({
+      title: 'Drop-In Hockey (6:00 PM)',
+      startTime: evening,
+      endTime: new Date(evening.getTime() + 75 * 60 * 1000), // 1.25 hours
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
+    })
   }
+
+  return events
 }

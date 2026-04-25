@@ -9,16 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^147.0.2",
     "@supabase/supabase-js": "^2.39.0",
     "boring-avatars": "^2.0.4",
     "date-fns": "^4.1.0",
     "next": "^15.3.6",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.6",
-    "@sparticuz/chromium": "^131.0.0",
-    "puppeteer-core": "^24.0.0",
-    "puppeteer-core": "^24.42.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "vercel": "^52.0.0"
