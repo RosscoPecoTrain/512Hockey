@@ -37,12 +37,15 @@ interface JobLog {
 }
 
 type Tab = 'config' | 'logs'
+type SortKey = 'job_name' | 'schedule_cron' | 'lastRun' | 'nextRun'
 
 export default function JobsPage() {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('config')
   const [isAdmin, setIsAdmin] = useState(false)
   const [authChecking, setAuthChecking] = useState(true)
+  const [sortKey, setSortKey] = useState<SortKey>('nextRun')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
   // Config state
   const [jobs, setJobs] = useState<JobConfig[]>([])
@@ -195,6 +198,61 @@ export default function JobsPage() {
     }
   }
 
+  // Get last run for a job
+  const getLastRun = (jobName: string): JobLog | undefined => {
+    return jobLogsForSelected.find(log => log.job_name === jobName && log.status !== 'pending')
+  }
+
+  // Parse cron to estimate next run (simplified)
+  const estimateNextRun = (cronStr: string): Date => {
+    const now = new Date()
+    // Simple approximation: add some hours based on cron pattern
+    // For production, use a proper cron parser library
+    if (cronStr.includes('*/6')) return new Date(now.getTime() + 6 * 60 * 60 * 1000)
+    if (cronStr.includes('*/3')) return new Date(now.getTime() + 3 * 60 * 60 * 1000)
+    if (cronStr.includes('0 0')) return new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    return new Date(now.getTime() + 60 * 60 * 1000)
+  }
+
+  // Sort jobs
+  const sortedJobs = [...jobs].sort((a, b) => {
+    let aVal: any, bVal: any
+
+    if (sortKey === 'job_name') {
+      aVal = a.job_name.toLowerCase()
+      bVal = b.job_name.toLowerCase()
+    } else if (sortKey === 'schedule_cron') {
+      aVal = a.schedule_cron
+      bVal = b.schedule_cron
+    } else if (sortKey === 'lastRun') {
+      const aLog = jobLogsForSelected.find(l => l.job_name === a.job_name)
+      const bLog = jobLogsForSelected.find(l => l.job_name === b.job_name)
+      aVal = aLog ? new Date(aLog.created_at).getTime() : 0
+      bVal = bLog ? new Date(bLog.created_at).getTime() : 0
+    } else if (sortKey === 'nextRun') {
+      aVal = estimateNextRun(a.schedule_cron).getTime()
+      bVal = estimateNextRun(b.schedule_cron).getTime()
+    }
+
+    if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
+    if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  const SortIndicator = ({ column }: { column: SortKey }) => {
+    if (sortKey !== column) return <span className="text-gray-300 text-xs">⇅</span>
+    return sortDir === 'asc' ? <span className="text-blue-600">↑</span> : <span className="text-blue-600">↓</span>
+  }
+
   const handleSelectJob = (job: JobConfig) => {
     setSelectedJob(job)
     setEditingJob({ ...job })
@@ -343,13 +401,37 @@ export default function JobsPage() {
                     <thead className="bg-gray-100 border-b border-gray-200">
                       <tr>
                         <th className="px-6 py-3 text-left font-medium text-gray-700">
-                          Job Name
+                          <button
+                            onClick={() => handleSort('job_name')}
+                            className="flex items-center gap-2 hover:text-gray-900 cursor-pointer"
+                          >
+                            Job Name <SortIndicator column="job_name" />
+                          </button>
                         </th>
                         <th className="px-6 py-3 text-left font-medium text-gray-700">
-                          Schedule
+                          <button
+                            onClick={() => handleSort('schedule_cron')}
+                            className="flex items-center gap-2 hover:text-gray-900 cursor-pointer"
+                          >
+                            Schedule <SortIndicator column="schedule_cron" />
+                          </button>
+                        </th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">Status</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">
+                          <button
+                            onClick={() => handleSort('lastRun')}
+                            className="flex items-center gap-2 hover:text-gray-900 cursor-pointer"
+                          >
+                            Last Run <SortIndicator column="lastRun" />
+                          </button>
                         </th>
                         <th className="px-6 py-3 text-left font-medium text-gray-700">
-                          Status
+                          <button
+                            onClick={() => handleSort('nextRun')}
+                            className="flex items-center gap-2 hover:text-gray-900 cursor-pointer"
+                          >
+                            Next Run <SortIndicator column="nextRun" />
+                          </button>
                         </th>
                         <th className="px-6 py-3 text-right font-medium text-gray-700">
                           Action
@@ -357,47 +439,69 @@ export default function JobsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {jobs.map((job) => (
-                        <tr key={job.id} className="hover:bg-gray-50 transition">
-                          <td className="px-6 py-3">
-                            <button
-                              onClick={() => handleSelectJob(job)}
-                              className="text-[#4fc3f7] hover:underline font-medium"
-                            >
-                              {job.job_name}
-                            </button>
-                          </td>
-                          <td className="px-6 py-3 text-gray-600 font-mono text-xs">
-                            {job.schedule_cron}
-                          </td>
-                          <td className="px-6 py-3">
-                            <span
-                              className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                job.enabled
-                                  ? 'bg-green-50 text-green-700'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {job.enabled ? 'Enabled' : 'Disabled'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-3 text-right space-x-2">
-                            <button
-                              onClick={() => handleRunNow(job)}
-                              disabled={runningJobName === job.job_name}
-                              className="px-3 py-1 bg-[#4fc3f7] text-white rounded text-xs font-semibold hover:bg-[#0288d1] disabled:opacity-50 transition"
-                            >
-                              {runningJobName === job.job_name ? 'Running...' : 'Run'}
-                            </button>
-                            <button
-                              onClick={() => handleSelectJob(job)}
-                              className="px-3 py-1 bg-gray-300 text-gray-900 rounded text-xs font-semibold hover:bg-gray-400 transition"
-                            >
-                              Config
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {sortedJobs.map((job) => {
+                        const lastRun = jobLogsForSelected.find(l => l.job_name === job.job_name)
+                        const nextRun = estimateNextRun(job.schedule_cron)
+                        return (
+                          <tr key={job.id} className="hover:bg-gray-50 transition">
+                            <td className="px-6 py-3">
+                              <button
+                                onClick={() => handleSelectJob(job)}
+                                className="text-[#4fc3f7] hover:underline font-medium"
+                              >
+                                {job.job_name}
+                              </button>
+                            </td>
+                            <td className="px-6 py-3 text-gray-600 font-mono text-xs">
+                              {job.schedule_cron}
+                            </td>
+                            <td className="px-6 py-3">
+                              <span
+                                className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                                  job.enabled
+                                    ? 'bg-green-50 text-green-700'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {job.enabled ? 'Enabled' : 'Disabled'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-3 text-gray-600 text-xs">
+                              {lastRun ? (
+                                <div>
+                                  <div className="font-mono">{new Date(lastRun.created_at).toLocaleDateString()} {new Date(lastRun.created_at).toLocaleTimeString()}</div>
+                                  <span className={`inline-block px-1.5 py-0.5 rounded text-xs mt-1 font-semibold ${
+                                    lastRun.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                  }`}>
+                                    {lastRun.status}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-3 text-gray-900">
+                              <div className="font-medium">in ~{Math.floor((nextRun.getTime() - new Date().getTime()) / 3600000)}h</div>
+                              <div className="text-xs text-gray-500 font-mono">{nextRun.toLocaleDateString()} {nextRun.toLocaleTimeString()}</div>
+                            </td>
+                            <td className="px-6 py-3 text-right space-x-2">
+                              <button
+                                onClick={() => handleRunNow(job)}
+                                disabled={runningJobName === job.job_name}
+                                className="px-3 py-1 bg-[#4fc3f7] text-white rounded text-xs font-semibold hover:bg-[#0288d1] disabled:opacity-50 transition"
+                              >
+                                {runningJobName === job.job_name ? 'Running...' : 'Run'}
+                              </button>
+                              <button
+                                onClick={() => handleSelectJob(job)}
+                                className="px-3 py-1 bg-gray-300 text-gray-900 rounded text-xs font-semibold hover:bg-gray-400 transition"
+                              >
+                                Config
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
