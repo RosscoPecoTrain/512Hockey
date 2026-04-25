@@ -11,7 +11,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 )
 
-export default function EventsPage() {
+export default function NotificationsPage() {
   const router = useRouter()
   const [eventTypes, setEventTypes] = useState<EventType[]>([])
   const [subscriptions, setSubscriptions] = useState<UserEventSubscription[]>([])
@@ -42,14 +42,14 @@ export default function EventsPage() {
   async function loadData(authUser: any) {
     try {
       // Get all event types
-      const eventTypesRes = await fetch('/api/events/types')
+      const eventTypesRes = await fetch('/api/notifications/types')
       const { event_types } = await eventTypesRes.json()
       setEventTypes(event_types || [])
 
       // Get user's subscriptions
       const { data: session } = await supabase.auth.getSession()
       if (session?.session) {
-        const subsRes = await fetch('/api/events/subscriptions', {
+        const subsRes = await fetch('/api/notifications/subscriptions', {
           headers: {
             Authorization: `Bearer ${session.session.access_token}`,
           },
@@ -78,7 +78,7 @@ export default function EventsPage() {
       const { data: session } = await supabase.auth.getSession()
       if (!session?.session) return
 
-      const res = await fetch('/api/events/subscriptions', {
+      const res = await fetch('/api/notifications/subscriptions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.session.access_token}`,
@@ -108,7 +108,7 @@ export default function EventsPage() {
       const { data: session } = await supabase.auth.getSession()
       if (!session?.session) return
 
-      const res = await fetch(`/api/events/subscriptions/${subscriptionId}`, {
+      const res = await fetch(`/api/notifications/subscriptions/${subscriptionId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
