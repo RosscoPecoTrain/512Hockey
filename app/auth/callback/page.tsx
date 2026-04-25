@@ -15,6 +15,19 @@ export default function AuthCallback() {
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        // Check if account is enabled
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_enabled')
+          .eq('id', session.user.id)
+          .single()
+
+        if (!profile || profile.is_enabled === false) {
+          await supabase.auth.signOut()
+          router.push('/auth/signin?error=disabled')
+          return
+        }
+
         // Check if user has signed all required agreements
         const { data: signed } = await supabase
           .from('user_agreements')

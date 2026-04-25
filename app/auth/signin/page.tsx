@@ -13,6 +13,11 @@ export default function SignIn() {
   const [mode, setMode] = useState<Mode>('signin')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Handle ?error=disabled from OAuth callback
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const urlError = searchParams?.get('error')
+  const disabledError = urlError === 'disabled' ? 'Your account has been disabled. Please contact an admin.' : ''
   const [success, setSuccess] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -72,7 +77,20 @@ export default function SignIn() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        if (data.user) await checkAgreementsAndRedirect(data.user.id)
+        if (data.user) {
+          // Check if account is enabled
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_enabled')
+            .eq('id', data.user.id)
+            .single()
+          if (!profile || profile.is_enabled === false) {
+            await supabase.auth.signOut()
+            setError('Your account has been disabled. Please contact an admin.')
+            return
+          }
+          await checkAgreementsAndRedirect(data.user.id)
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -107,9 +125,9 @@ export default function SignIn() {
           </button>
         </div>
 
-        {error && (
+        {(error || disabledError) && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-            {error}
+            {error || disabledError}
           </div>
         )}
         {success && (

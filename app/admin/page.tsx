@@ -13,6 +13,7 @@ interface Profile {
   email: string | null
   is_admin: boolean
   is_banned: boolean | null
+  is_enabled: boolean
   created_at: string
   position: string | null
 }
@@ -139,11 +140,13 @@ export default function AdminPage() {
   }
 
   const loadUsers = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setUsers(data || [])
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch('/api/admin/users', {
+      headers: { Authorization: `Bearer ${session.access_token}` }
+    })
+    const json = await res.json()
+    setUsers(json.users || [])
   }
 
   const approvePost = async (id: string) => {
@@ -165,9 +168,40 @@ export default function AdminPage() {
   }
 
   const toggleBan = async (userId: string, isBanned: boolean) => {
-    await supabase.from('profiles').update({ is_banned: !isBanned }).eq('id', userId)
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_banned: !isBanned } : u))
-    flash(isBanned ? 'User unbanned' : 'User banned')
+    const newValue = !isBanned
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, updates: { is_banned: newValue } })
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      flash('Error updating ban status')
+      return
+    }
+    setUsers(prev => prev.map(u => u.id === userId ? json.user : u))
+    flash(newValue ? 'User banned' : 'User unbanned')
+  }
+
+  const toggleEnabled = async (userId: string, isEnabled: boolean) => {
+    const newValue = !isEnabled
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, updates: { is_enabled: newValue } })
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      flash('Error updating account status')
+      console.error('toggleEnabled error:', json.error)
+      return
+    }
+    setUsers(prev => prev.map(u => u.id === userId ? json.user : u))
+    flash(newValue ? 'Account enabled' : 'Account disabled')
   }
 
   const flash = (msg: string) => {
@@ -376,22 +410,36 @@ export default function AdminPage() {
                       <span className="text-xs bg-[#4fc3f7]/20 text-[#4fc3f7] px-2 py-0.5 rounded-full font-semibold">Admin</span>
                     ) : user.is_banned ? (
                       <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-semibold">Banned</span>
+                    ) : user.is_enabled === false ? (
+                      <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full font-semibold">Disabled</span>
                     ) : (
                       <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-semibold">Active</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {!user.is_admin && (
-                      <button
-                        onClick={() => toggleBan(user.id, !!user.is_banned)}
-                        className={`text-xs px-3 py-1.5 rounded font-semibold transition ${
-                          user.is_banned
-                            ? 'bg-green-500 text-white hover:bg-green-600'
-                            : 'bg-red-500 text-white hover:bg-red-600'
-                        }`}
-                      >
-                        {user.is_banned ? 'Unban' : 'Ban'}
-                      </button>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => toggleEnabled(user.id, user.is_enabled !== false)}
+                          className={`text-xs px-3 py-1.5 rounded font-semibold transition ${
+                            user.is_enabled === false
+                              ? 'bg-blue-500 text-white hover:bg-blue-600'
+                              : 'bg-gray-400 text-white hover:bg-gray-500'
+                          }`}
+                        >
+                          {user.is_enabled === false ? 'Enable' : 'Disable'}
+                        </button>
+                        <button
+                          onClick={() => toggleBan(user.id, !!user.is_banned)}
+                          className={`text-xs px-3 py-1.5 rounded font-semibold transition ${
+                            user.is_banned
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-red-500 text-white hover:bg-red-600'
+                          }`}
+                        >
+                          {user.is_banned ? 'Unban' : 'Ban'}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

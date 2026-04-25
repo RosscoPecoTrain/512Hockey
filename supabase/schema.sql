@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   leagues TEXT[], -- Array of league names
   phone TEXT, -- Private, not shown publicly
   preferred_rinks TEXT[], -- Array of rink names
+  is_enabled BOOLEAN DEFAULT TRUE, -- Account enabled/disabled toggle
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

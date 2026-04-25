@@ -5,6 +5,12 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { initializeCronJobs } from '@/lib/cronJobs'
+
+// Initialize cron jobs on server startup
+if (typeof window === 'undefined') {
+  initializeCronJobs()
+}
 
 const geist = Geist({
   variable: '--font-geist-sans',
