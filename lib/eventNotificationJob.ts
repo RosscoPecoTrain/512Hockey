@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { EventType, UserEventSubscription, DetectedEvent } from '@/types'
 import { detectNewEvents } from './eventScraper'
 import { sendEventNotificationEmail } from './emailService'
+import { logJobRun } from './jobLogger'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -14,8 +15,12 @@ const supabase = createClient(
  */
 export async function checkForNewEventPostings() {
   console.log('🏒 Starting event notification job...')
+  const startTime = new Date()
 
   const client = supabase
+  let eventTypesChecked = 0
+  let eventsDetected = 0
+  let notificationsSent = 0
 
   try {
     // Get all active event types
@@ -30,26 +35,63 @@ export async function checkForNewEventPostings() {
 
     if (!eventTypes || eventTypes.length === 0) {
       console.log('No active event types to check')
-      return
-    }
+      eventTypesChecked = 0
+    } else {
+      console.log(`Found ${eventTypes.length} active event type(s) to monitor`)
 
-    console.log(`Found ${eventTypes.length} active event type(s) to monitor`)
-
-    for (const eventType of eventTypes as EventType[]) {
-      await processEventType(eventType)
+      for (const eventType of eventTypes as EventType[]) {
+        const result = await processEventType(eventType)
+        eventTypesChecked++
+        eventsDetected += result.eventsDetected
+        notificationsSent += result.notificationsSent
+      }
     }
 
     console.log('✅ Event notification job completed')
+
+    const endTime = new Date()
+    const durationMs = endTime.getTime() - startTime.getTime()
+
+    // Log successful job run
+    await logJobRun({
+      jobName: 'event-notification-check',
+      jobType: 'event_notification',
+      status: 'success',
+      startedAt: startTime,
+      completedAt: endTime,
+      durationMs,
+      outputData: {
+        eventTypesChecked,
+        eventsDetected,
+        notificationsSent,
+      },
+    })
   } catch (error) {
     console.error('❌ Job failed:', error)
+    const endTime = new Date()
+    const durationMs = endTime.getTime() - startTime.getTime()
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    // Log failed job run
+    await logJobRun({
+      jobName: 'event-notification-check',
+      jobType: 'event_notification',
+      status: 'failed',
+      startedAt: startTime,
+      completedAt: endTime,
+      durationMs,
+      errorMessage,
+    })
+
     throw error
   }
 }
 
 /**
  * Process a single event type
+ * Returns metrics about the processing
  */
-async function processEventType(eventType: EventType) {
+async function processEventType(eventType: EventType): Promise<{ eventsDetected: number; notificationsSent: number }> {
   const client = supabase
 
   console.log(`\n🔍 Checking ${eventType.name}...`)
@@ -70,7 +112,7 @@ async function processEventType(eventType: EventType) {
         })
         .eq('id', eventType.id)
 
-      return
+      return { eventsDetected: 0, notificationsSent: 0 }
     }
 
     // Get the latest event (already sorted by date)
@@ -94,7 +136,7 @@ async function processEventType(eventType: EventType) {
         })
         .eq('id', eventType.id)
 
-      return
+      return { eventsDetected: 0, notificationsSent: 0 }
     }
 
     // NEW EVENT DETECTED
@@ -114,6 +156,7 @@ async function processEventType(eventType: EventType) {
     console.log(`Found ${subscribers?.length || 0} subscriber(s)`)
 
     // Notify each subscriber
+    let notificationsSent = 0
     if (subscribers) {
       for (const subscription of subscribers as UserEventSubscription[]) {
         // Get user email for email notifications
@@ -127,12 +170,13 @@ async function processEventType(eventType: EventType) {
           console.warn(`Could not fetch email for user ${subscription.user_id}`)
         }
 
-        await notifySubscriber(
+        const sent = await notifySubscriber(
           subscription,
           eventType,
           latestEvent,
           userEmail
         )
+        if (sent) notificationsSent++
       }
     }
 
@@ -155,6 +199,7 @@ async function processEventType(eventType: EventType) {
     }
 
     console.log(`✅ Completed ${eventType.name}`)
+    return { eventsDetected: 1, notificationsSent }
   } catch (error) {
     console.error(`Error processing ${eventType.name}:`, error)
 
@@ -168,11 +213,14 @@ async function processEventType(eventType: EventType) {
         last_check_error: errorMessage,
       })
       .eq('id', eventType.id)
+
+    return { eventsDetected: 0, notificationsSent: 0 }
   }
 }
 
 /**
  * Notify a subscriber about a new event
+ * Returns true if notification was sent successfully
  */
 async function notifySubscriber(
   subscription: UserEventSubscription,
@@ -180,7 +228,7 @@ async function notifySubscriber(
   event: DetectedEvent,
   userEmail?: string,
   allSubscriptions?: UserEventSubscription[]
-) {
+): Promise<boolean> {
   const client = supabase
 
   try {
@@ -199,7 +247,7 @@ async function notifySubscriber(
       console.log(
         `User ${subscription.user_id} already notified about ${event.id}`
       )
-      return
+      return false
     }
 
     // Insert notification record
@@ -237,8 +285,10 @@ async function notifySubscriber(
       userEmail,
       allSubscriptions
     )
+    return true
   } catch (error) {
     console.error(`Failed to notify subscriber ${subscription.user_id}:`, error)
+    return false
   }
 }
 

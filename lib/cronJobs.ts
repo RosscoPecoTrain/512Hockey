@@ -1,5 +1,6 @@
 import cron from 'node-cron'
 import { checkForNewEventPostings } from './eventNotificationJob'
+import { cleanupOldLogs } from './jobLogger'
 
 let cronInitialized = false
 
@@ -23,4 +24,17 @@ export function initializeCronJobs() {
   })
 
   console.log('✓ Event notification cron job initialized (every 6 hours)')
+
+  // Run daily at 2 AM: cleanup old job logs (older than 90 days)
+  cron.schedule('0 2 * * *', async () => {
+    console.log('🧹 Running job log cleanup...')
+    try {
+      const deletedCount = await cleanupOldLogs(90)
+      console.log(`✅ Cleaned up ${deletedCount} old job logs`)
+    } catch (error) {
+      console.error('❌ Job log cleanup failed:', error)
+    }
+  })
+
+  console.log('✓ Job log cleanup cron job initialized (daily at 2 AM)')
 }
