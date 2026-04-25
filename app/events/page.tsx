@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { EventType, UserEventSubscription } from '@/types'
+import SubscriptionModal from './subscription-modal'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -17,6 +18,8 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,55 +64,64 @@ export default function EventsPage() {
     }
   }
 
-  async function toggleSubscription(eventTypeId: string) {
-    if (!user) return
+  function openSubscriptionModal(eventType: EventType) {
+    setSelectedEventType(eventType)
+    setModalOpen(true)
+  }
 
+  async function handleSubscribeWithChannels(channels: string[]) {
+    if (!user || !selectedEventType) return
+
+    setUpdating(selectedEventType.id)
+
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session) return
+
+      const res = await fetch('/api/events/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_type_id: selectedEventType.id,
+          notify_via: channels,
+        }),
+      })
+
+      if (res.ok) {
+        const { subscription } = await res.json()
+        setSubscriptions([...subscriptions, subscription])
+      }
+    } catch (error) {
+      console.error('Error subscribing:', error)
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  async function unsubscribe(subscriptionId: string, eventTypeId: string) {
     setUpdating(eventTypeId)
 
     try {
       const { data: session } = await supabase.auth.getSession()
       if (!session?.session) return
 
-      const isSubscribed = subscriptions.some(
-        (s) => s.event_type_id === eventTypeId
-      )
+      const res = await fetch(`/api/events/subscriptions/${subscriptionId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
 
-      if (isSubscribed) {
-        // Delete subscription
-        const sub = subscriptions.find((s) => s.event_type_id === eventTypeId)
-        if (sub) {
-          const res = await fetch(`/api/events/subscriptions/${sub.id}`, {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${session.session.access_token}`,
-            },
-          })
-
-          if (res.ok) {
-            setSubscriptions(subscriptions.filter((s) => s.id !== sub.id))
-          }
-        }
-      } else {
-        // Create subscription
-        const res = await fetch('/api/events/subscriptions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            event_type_id: eventTypeId,
-            notify_via: ['push'],
-          }),
-        })
-
-        if (res.ok) {
-          const { subscription } = await res.json()
-          setSubscriptions([...subscriptions, subscription])
-        }
+      if (res.ok) {
+        setSubscriptions(
+          subscriptions.filter((s) => s.id !== subscriptionId)
+        )
       }
     } catch (error) {
-      console.error('Error toggling subscription:', error)
+      console.error('Error unsubscribing:', error)
     } finally {
       setUpdating(null)
     }
@@ -183,23 +195,28 @@ export default function EventsPage() {
                   </div>
 
                   {/* Subscribe/Unsubscribe Button */}
-                  <button
-                    onClick={() => toggleSubscription(eventType.id)}
-                    disabled={isUpdating}
-                    className={`px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                      isSubscribed
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500'
-                        : 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'
-                    } ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isUpdating ? (
-                      <span>...</span>
-                    ) : isSubscribed ? (
-                      '✓ Subscribed'
-                    ) : (
-                      'Subscribe'
-                    )}
-                  </button>
+                  {isSubscribed ? (
+                    <button
+                      onClick={() => {
+                        const sub = subscriptions.find(
+                          (s) => s.event_type_id === eventType.id
+                        )
+                        if (sub) unsubscribe(sub.id, eventType.id)
+                      }}
+                      disabled={isUpdating}
+                      className={`px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-colors bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isUpdating ? '...' : '✓ Subscribed'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => openSubscriptionModal(eventType)}
+                      disabled={isUpdating}
+                      className={`px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-colors bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      Subscribe
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -228,6 +245,17 @@ export default function EventsPage() {
         </div>
       )}
 
+      {/* Subscription Modal */}
+      {selectedEventType && (
+        <SubscriptionModal
+          eventTypeName={selectedEventType.name}
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubscribe={handleSubscribeWithChannels}
+          isLoading={updating === selectedEventType.id}
+        />
+      )}
+
       {/* Info Box */}
       <div className="mt-8 bg-gray-50 dark:bg-gray-900 rounded-lg p-6 text-sm text-gray-600 dark:text-gray-400">
         <p className="mb-2">
@@ -235,6 +263,7 @@ export default function EventsPage() {
         </p>
         <ul className="list-disc list-inside space-y-1">
           <li>Subscribe to event types you're interested in</li>
+          <li>Choose your notification channels (push, email)</li>
           <li>We check for new events every 6 hours</li>
           <li>You'll be notified when new dates are posted</li>
           <li>Notifications include a direct link to register</li>
