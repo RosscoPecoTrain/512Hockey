@@ -39,7 +39,7 @@ interface Report {
   reporter?: { full_name: string | null; email: string | null }
 }
 
-type Tab = 'forum' | 'reports' | 'users' | 'photos' | 'jobs'
+type Tab = 'forum' | 'reports' | 'users' | 'photos'
 
 interface PendingPhoto {
   id: string
@@ -220,7 +220,6 @@ export default function AdminPage() {
     { key: 'reports', label: '🚩 Reports', count: reports.filter(r => r.status === 'pending').length },
     { key: 'photos', label: '📷 Photos', count: pendingPhotos.length },
     { key: 'users', label: '👥 Users', count: users.length },
-    { key: 'jobs', label: '⚙️ Jobs' },
   ]
 
   return (
@@ -374,13 +373,6 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Jobs */}
-      {tab === 'jobs' && (
-        <div className="bg-white dark:bg-[#161b22] rounded-lg border border-gray-200 dark:border-[#30363d] p-6">
-          <p className="text-gray-600 dark:text-[#8b949e]">Job logs dashboard coming soon. <a href="/admin/jobs" className="text-[#4fc3f7] hover:underline">View logs here</a></p>
         </div>
       )}
 
