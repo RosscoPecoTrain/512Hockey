@@ -1,9 +1,14 @@
 import cron from 'node-cron'
-import { checkForNewEventPostings } from './eventNotificationJob'
-import { cleanupOldLogs } from './jobLogger'
-import { scrapeDropInHockeyEvents } from './dropInScraper'
+import { createClient } from '@supabase/supabase-js'
+import { executeJob } from './cronJobExecutor'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+)
 
 let cronInitialized = false
+const scheduledJobs = new Map<string, cron.ScheduledTask>()
 
 export function initializeCronJobs() {
   if (cronInitialized) {
@@ -12,48 +17,84 @@ export function initializeCronJobs() {
   }
 
   cronInitialized = true
+  loadAndScheduleJobs()
+}
 
-  // Run every 6 hours: 0 AM, 6 AM, 12 PM, 6 PM
-  cron.schedule('0 */6 * * *', async () => {
-    console.log('🏒 Running event notification job...')
-    try {
-      await checkForNewEventPostings()
-      console.log('✅ Event notification job completed')
-    } catch (error) {
-      console.error('❌ Event notification job failed:', error)
+async function loadAndScheduleJobs() {
+  try {
+    console.log('📋 Loading cron job configs...')
+
+    // Get all enabled jobs from the database
+    const { data: jobs, error } = await supabase
+      .from('cron_job_configs')
+      .select('*')
+      .eq('enabled', true)
+
+    if (error) {
+      console.error('Error loading cron jobs:', error)
+      return
     }
-  })
 
-  console.log('✓ Event notification cron job initialized (every 6 hours)')
-
-  // Run daily at 2 AM: cleanup old job logs (older than 90 days)
-  cron.schedule('0 2 * * *', async () => {
-    console.log('🧹 Running job log cleanup...')
-    try {
-      const deletedCount = await cleanupOldLogs(90)
-      console.log(`✅ Cleaned up ${deletedCount} old job logs`)
-    } catch (error) {
-      console.error('❌ Job log cleanup failed:', error)
+    if (!jobs || jobs.length === 0) {
+      console.log('No enabled cron jobs found')
+      return
     }
-  })
 
-  console.log('✓ Job log cleanup cron job initialized (daily at 2 AM)')
+    console.log(`Found ${jobs.length} enabled job(s)`)
 
-  // Run every 6 hours: scrape drop-in hockey events
-  cron.schedule('0 */6 * * *', async () => {
-    console.log('🏒 Running drop-in hockey scraper...')
-    try {
-      const result = await scrapeDropInHockeyEvents()
-      console.log(
-        `✅ Drop-in hockey scraper completed: Created ${result.eventsCreated}, Updated ${result.eventsUpdated}, Locations ${result.locationsScraped}`
-      )
-      if (result.errors.length > 0) {
-        console.warn('⚠️  Scraper errors:', result.errors)
+    // Schedule each job
+    for (const job of jobs) {
+      scheduleJob(job)
+    }
+  } catch (error) {
+    console.error('Error in loadAndScheduleJobs:', error)
+  }
+}
+
+function scheduleJob(jobConfig: any) {
+  try {
+    // Clear any existing scheduled task for this job
+    if (scheduledJobs.has(jobConfig.job_name)) {
+      const existingTask = scheduledJobs.get(jobConfig.job_name)
+      if (existingTask) {
+        existingTask.stop()
       }
-    } catch (error) {
-      console.error('❌ Drop-in hockey scraper failed:', error)
     }
-  })
 
-  console.log('✓ Drop-in hockey scraper cron job initialized (every 6 hours)')
+    // Schedule the new job
+    const task = cron.schedule(jobConfig.schedule_cron, async () => {
+      console.log(`⏱️  Executing ${jobConfig.job_name}...`)
+      try {
+        await executeJob(jobConfig)
+      } catch (error) {
+        console.error(`Error executing ${jobConfig.job_name}:`, error)
+      }
+    })
+
+    scheduledJobs.set(jobConfig.job_name, task)
+    console.log(
+      `✓ Scheduled ${jobConfig.job_name} with cron: ${jobConfig.schedule_cron}`
+    )
+  } catch (error) {
+    console.error(`Error scheduling ${jobConfig.job_name}:`, error)
+  }
+}
+
+/**
+ * Reload all cron jobs from the database
+ * Call this after updating job configs in the admin UI
+ */
+export async function reloadCronJobs() {
+  console.log('🔄 Reloading cron jobs...')
+
+  // Stop all existing jobs
+  for (const [name, task] of scheduledJobs.entries()) {
+    task.stop()
+    scheduledJobs.delete(name)
+    console.log(`Stopped ${name}`)
+  }
+
+  // Reload from database
+  await loadAndScheduleJobs()
+  console.log('✅ Cron jobs reloaded')
 }
