@@ -30,9 +30,13 @@ export default function Directory() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(session?.user ?? null)
+      if (!session?.user) {
+        router.push('/auth/signin')
+        return
+      }
+      setCurrentUser(session.user)
     })
-  }, [])
+  }, [router])
 
   // Load all profiles once
   useEffect(() => {

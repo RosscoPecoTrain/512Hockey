@@ -66,10 +66,10 @@ export default function Navbar() {
   }, [])
 
   const navLinks = [
-    { href: '/directory', label: 'Players' },
     { href: '/forum', label: 'Forum' },
-    { href: '/rinks', label: 'Rinks' },
-    { href: '/notifications', label: 'Notifications' },
+    ...(user ? [{ href: '/directory', label: 'Players' }] : []),
+    ...(user ? [{ href: '/rinks', label: 'Rinks' }] : []),
+    ...(user ? [{ href: '/notifications', label: 'Notifications' }] : []),
     ...(user ? [{ href: '/messages', label: 'Messages' }] : []),
     ...(isAdmin ? [{ href: '/admin', label: '⚙️ Admin' }] : []),
   ]

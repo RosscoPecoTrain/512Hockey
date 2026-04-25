@@ -1,13 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Location } from '@/types'
 
 export default function Rinks() {
+  const router = useRouter()
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        router.push('/auth/signin')
+        return
+      }
+    }
+    checkAuth()
+  }, [router])
+
+  // Fetch locations
   useEffect(() => {
     const fetchLocations = async () => {
       try {
