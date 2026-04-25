@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Avatar from '@/components/Avatar'
+import AdminJobsTab from '@/components/AdminJobsTab'
 
 interface Profile {
   id: string
@@ -39,7 +40,7 @@ interface Report {
   reporter?: { full_name: string | null; email: string | null }
 }
 
-type Tab = 'forum' | 'reports' | 'users' | 'photos'
+type Tab = 'forum' | 'reports' | 'users' | 'photos' | 'jobs'
 
 interface PendingPhoto {
   id: string
@@ -220,6 +221,7 @@ export default function AdminPage() {
     { key: 'reports', label: '🚩 Reports', count: reports.filter(r => r.status === 'pending').length },
     { key: 'photos', label: '📷 Photos', count: pendingPhotos.length },
     { key: 'users', label: '👥 Users', count: users.length },
+    { key: 'jobs', label: '⚙️ Jobs' },
   ]
 
   return (
@@ -375,6 +377,9 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+
+      {/* Jobs */}
+      {tab === 'jobs' && <AdminJobsTab />}
 
       {/* Users */}
       {tab === 'users' && (

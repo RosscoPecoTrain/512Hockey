@@ -22,7 +22,7 @@ interface JobLog {
   created_at: string
 }
 
-export default function AdminJobsPage() {
+export default function AdminJobsTab() {
   const [logs, setLogs] = useState<JobLog[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
