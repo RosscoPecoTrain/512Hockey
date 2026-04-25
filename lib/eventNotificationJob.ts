@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { EventType, UserEventSubscription, DetectedEvent } from '@/types'
 import { detectNewEvents } from './eventScraper'
+import { sendEventNotificationEmail } from './emailService'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -115,10 +116,22 @@ async function processEventType(eventType: EventType) {
     // Notify each subscriber
     if (subscribers) {
       for (const subscription of subscribers as UserEventSubscription[]) {
+        // Get user email for email notifications
+        let userEmail: string | undefined
+        try {
+          const { data: userData } = await client.auth.admin.getUserById(
+            subscription.user_id
+          )
+          userEmail = userData.user?.email
+        } catch (err) {
+          console.warn(`Could not fetch email for user ${subscription.user_id}`)
+        }
+
         await notifySubscriber(
           subscription,
           eventType,
-          latestEvent
+          latestEvent,
+          userEmail
         )
       }
     }
@@ -164,7 +177,8 @@ async function processEventType(eventType: EventType) {
 async function notifySubscriber(
   subscription: UserEventSubscription,
   eventType: EventType,
-  event: DetectedEvent
+  event: DetectedEvent,
+  userEmail?: string
 ) {
   const client = supabase
 
@@ -209,7 +223,7 @@ async function notifySubscriber(
 
     console.log(`📬 Notification recorded for ${subscription.user_id}`)
 
-    // Send actual notifications (placeholder for now)
+    // Send actual notifications
     await sendNotifications(
       subscription.user_id,
       subscription.notify_via,
@@ -218,7 +232,8 @@ async function notifySubscriber(
         subtitle: event.date_display,
         body: 'New event posted on The Pond Hockey Club',
         url: event.registration_url,
-      }
+      },
+      userEmail
     )
   } catch (error) {
     console.error(`Failed to notify subscriber ${subscription.user_id}:`, error)
@@ -227,7 +242,6 @@ async function notifySubscriber(
 
 /**
  * Send notifications via configured channels
- * Currently a placeholder - integrate with your notification service
  */
 async function sendNotifications(
   userId: string,
@@ -237,26 +251,43 @@ async function sendNotifications(
     subtitle: string
     body: string
     url: string
-  }
+  },
+  userEmail?: string
 ) {
+  const client = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  )
+
   for (const channel of channels) {
     try {
       switch (channel) {
         case 'push':
           console.log(`[PUSH] ${message.title} - ${message.body}`)
-          // TODO: Integrate with your push notification service
+          // TODO: Integrate with OneSignal or FCM
           // await sendPushNotification(userId, message)
           break
 
         case 'email':
-          console.log(`[EMAIL] ${message.title} - ${message.body}`)
-          // TODO: Integrate with your email service
-          // await sendEmailNotification(userId, message)
+          if (userEmail) {
+            const emailSent = await sendEventNotificationEmail({
+              toEmail: userEmail,
+              toName: 'Hockey Player',
+              eventTitle: message.title,
+              eventDate: message.subtitle,
+              registrationUrl: message.url,
+            })
+            if (emailSent) {
+              console.log(`[EMAIL] Sent to ${userEmail}`)
+            }
+          } else {
+            console.log(`[EMAIL] No email address for user ${userId}`)
+          }
           break
 
         case 'sms':
           console.log(`[SMS] ${message.title} - ${message.body}`)
-          // TODO: Integrate with your SMS service
+          // TODO: Integrate with Twilio
           // await sendSMSNotification(userId, message)
           break
 
