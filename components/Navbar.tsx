@@ -69,7 +69,7 @@ export default function Navbar() {
     { href: '/forum', label: 'Forum' },
     ...(user ? [{ href: '/directory', label: 'Players' }] : []),
     ...(user ? [{ href: '/rinks', label: 'Rinks' }] : []),
-    ...(user ? [{ href: '/events', label: 'Games' }] : []),
+    ...(user ? [{ href: '/events', label: 'Events' }] : []),
     ...(user ? [{ href: '/notifications', label: 'Notifications' }] : []),
     ...(user ? [{ href: '/messages', label: 'Messages' }] : []),
     ...(isAdmin ? [{ href: '/admin', label: '⚙️ Admin' }] : []),
