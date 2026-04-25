@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function GET(request: NextRequest) {
   try {
     const { data: eventTypes, error } = await supabase
-      .from('event_types')
+      .from('notification_event_types')
       .select('*, locations(name)')
       .eq('active', true)
       .order('name')
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: eventType, error } = await supabase
-      .from('event_types')
+      .from('notification_event_types')
       .insert([
         {
           name,

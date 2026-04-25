@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { EventType, UserEventSubscription } from '@/types'
+import { NotificationEventType, UserNotificationSubscription } from '@/types'
 import SubscriptionModal from './subscription-modal'
 
 const supabase = createClient(
@@ -13,13 +13,13 @@ const supabase = createClient(
 
 export default function NotificationsPage() {
   const router = useRouter()
-  const [eventTypes, setEventTypes] = useState<EventType[]>([])
-  const [subscriptions, setSubscriptions] = useState<UserEventSubscription[]>([])
+  const [eventTypes, setNotificationEventTypes] = useState<NotificationEventType[]>([])
+  const [subscriptions, setSubscriptions] = useState<UserNotificationSubscription[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [updating, setUpdating] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null)
+  const [selectedNotificationEventType, setSelectedNotificationEventType] = useState<NotificationEventType | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,7 +44,7 @@ export default function NotificationsPage() {
       // Get all event types
       const eventTypesRes = await fetch('/api/notifications/types')
       const { event_types } = await eventTypesRes.json()
-      setEventTypes(event_types || [])
+      setNotificationEventTypes(event_types || [])
 
       // Get user's subscriptions
       const { data: session } = await supabase.auth.getSession()
@@ -64,15 +64,15 @@ export default function NotificationsPage() {
     }
   }
 
-  function openSubscriptionModal(eventType: EventType) {
-    setSelectedEventType(eventType)
+  function openSubscriptionModal(eventType: NotificationEventType) {
+    setSelectedNotificationEventType(eventType)
     setModalOpen(true)
   }
 
   async function handleSubscribeWithChannels(channels: string[]) {
-    if (!user || !selectedEventType) return
+    if (!user || !selectedNotificationEventType) return
 
-    setUpdating(selectedEventType.id)
+    setUpdating(selectedNotificationEventType.id)
 
     try {
       const { data: session } = await supabase.auth.getSession()
@@ -85,7 +85,7 @@ export default function NotificationsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          event_type_id: selectedEventType.id,
+          notification_event_type_id: selectedNotificationEventType.id,
           notify_via: channels,
         }),
       })
@@ -163,7 +163,7 @@ export default function NotificationsPage() {
         <div className="space-y-4">
           {eventTypes.map((eventType) => {
             const isSubscribed = subscriptions.some(
-              (s) => s.event_type_id === eventType.id
+              (s) => s.notification_event_type_id === eventType.id
             )
             const isUpdating = updating === eventType.id
 
@@ -206,7 +206,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={() => {
                         const sub = subscriptions.find(
-                          (s) => s.event_type_id === eventType.id
+                          (s) => s.notification_event_type_id === eventType.id
                         )
                         if (sub) unsubscribe(sub.id, eventType.id)
                       }}
@@ -241,7 +241,7 @@ export default function NotificationsPage() {
           </p>
           <ul className="space-y-2">
             {subscriptions.map((sub) => {
-              const eventType = eventTypes.find((et) => et.id === sub.event_type_id)
+              const eventType = eventTypes.find((et) => et.id === sub.notification_event_type_id)
               return (
                 <li key={sub.id} className="text-sm">
                   <span className="inline-block">🔔 {eventType?.name}</span>
@@ -253,13 +253,13 @@ export default function NotificationsPage() {
       )}
 
       {/* Subscription Modal */}
-      {selectedEventType && (
+      {selectedNotificationEventType && (
         <SubscriptionModal
-          eventTypeName={selectedEventType.name}
+          eventTypeName={selectedNotificationEventType.name}
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
           onSubscribe={handleSubscribeWithChannels}
-          isLoading={updating === selectedEventType.id}
+          isLoading={updating === selectedNotificationEventType.id}
         />
       )}
 

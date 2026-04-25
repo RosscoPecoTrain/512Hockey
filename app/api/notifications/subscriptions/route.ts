@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: subscriptions, error } = await supabase
-      .from('user_event_subscriptions')
+      .from('user_notification_subscriptions')
       .select(
         `
         *,
@@ -76,29 +76,29 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { event_type_id, notify_via = ['push'] } = body
+    const { notification_event_type_id, notify_via = ['push'] } = body
 
-    if (!event_type_id) {
+    if (!notification_event_type_id) {
       return NextResponse.json(
-        { error: 'event_type_id required' },
+        { error: 'notification_event_type_id required' },
         { status: 400 }
       )
     }
 
     const { data: subscription, error } = await supabase
-      .from('user_event_subscriptions')
+      .from('user_notification_subscriptions')
       .upsert(
         [
           {
             user_id: user.id,
-            event_type_id,
+            notification_event_type_id,
             notify_via,
             active: true,
             updated_at: new Date().toISOString(),
           },
         ],
         {
-          onConflict: 'user_id,event_type_id',
+          onConflict: 'user_id,notification_event_type_id',
         }
       )
       .select()

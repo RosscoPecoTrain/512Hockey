@@ -28,7 +28,7 @@ export async function DELETE(
     }
 
     const { error } = await supabase
-      .from('user_event_subscriptions')
+      .from('user_notification_subscriptions')
       .update({ active: false, updated_at: new Date().toISOString() })
       .eq('id', params.id)
       .eq('user_id', user.id)
@@ -79,7 +79,7 @@ export async function PATCH(
     }
 
     const { data: subscription, error } = await supabase
-      .from('user_event_subscriptions')
+      .from('user_notification_subscriptions')
       .update({
         notify_via,
         updated_at: new Date().toISOString(),

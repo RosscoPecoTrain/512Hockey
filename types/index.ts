@@ -64,7 +64,7 @@ export interface Location {
 /** @deprecated Use Location instead */
 export type Rink = Location
 
-export interface EventType {
+export interface NotificationEventType {
   id: string
   name: string
   location_id?: string
@@ -84,20 +84,26 @@ export interface EventType {
   updated_at: string
 }
 
-export interface UserEventSubscription {
+/** @deprecated Use NotificationEventType instead */
+export type EventType = NotificationEventType
+
+export interface UserNotificationSubscription {
   id: string
   user_id: string
-  event_type_id: string
+  notification_event_type_id: string
   notify_via: string[] // ['push', 'email', 'sms']
   active: boolean
   subscribed_at: string
   updated_at: string
 }
 
+/** @deprecated Use UserNotificationSubscription instead */
+export type UserEventSubscription = UserNotificationSubscription
+
 export interface EventNotification {
   id: string
   user_id: string
-  event_type_id: string
+  notification_event_type_id: string
   detected_event_id: string
   detected_event_title: string
   detected_event_date: string

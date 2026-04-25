@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { EventType, UserEventSubscription, DetectedEvent } from '@/types'
+import { NotificationEventType, UserNotificationSubscription, DetectedEvent } from '@/types'
 import { detectNewEvents } from './eventScraper'
 import { sendEventNotificationEmail } from './emailService'
 import { logJobRun } from './jobLogger'
@@ -25,7 +25,7 @@ export async function checkForNewEventPostings() {
   try {
     // Get all active event types
     const { data: eventTypes, error: fetchError } = await client
-      .from('event_types')
+      .from('notification_event_types')
       .select('*')
       .eq('active', true)
 
@@ -39,8 +39,8 @@ export async function checkForNewEventPostings() {
     } else {
       console.log(`Found ${eventTypes.length} active event type(s) to monitor`)
 
-      for (const eventType of eventTypes as EventType[]) {
-        const result = await processEventType(eventType)
+      for (const eventType of eventTypes as NotificationEventType[]) {
+        const result = await processNotificationEventType(eventType)
         eventTypesChecked++
         eventsDetected += result.eventsDetected
         notificationsSent += result.notificationsSent
@@ -91,7 +91,7 @@ export async function checkForNewEventPostings() {
  * Process a single event type
  * Returns metrics about the processing
  */
-async function processEventType(eventType: EventType): Promise<{ eventsDetected: number; notificationsSent: number }> {
+async function processNotificationEventType(eventType: NotificationEventType): Promise<{ eventsDetected: number; notificationsSent: number }> {
   const client = supabase
 
   console.log(`\n🔍 Checking ${eventType.name}...`)
@@ -104,7 +104,7 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
       console.log(`No events found for ${eventType.name}`)
 
       await client
-        .from('event_types')
+        .from('notification_event_types')
         .update({
           last_check_at: new Date().toISOString(),
           last_check_status: 'no_new_events',
@@ -128,7 +128,7 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
       console.log(`No new events since ${lastDetectedDate.toDateString()}`)
 
       await client
-        .from('event_types')
+        .from('notification_event_types')
         .update({
           last_check_at: new Date().toISOString(),
           last_check_status: 'no_new_events',
@@ -144,9 +144,9 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
 
     // Get all active subscribers for this event type
     const { data: subscribers, error: subError } = await client
-      .from('user_event_subscriptions')
+      .from('user_notification_subscriptions')
       .select('*')
-      .eq('event_type_id', eventType.id)
+      .eq('notification_event_type_id', eventType.id)
       .eq('active', true)
 
     if (subError) {
@@ -158,7 +158,7 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
     // Notify each subscriber
     let notificationsSent = 0
     if (subscribers) {
-      for (const subscription of subscribers as UserEventSubscription[]) {
+      for (const subscription of subscribers as UserNotificationSubscription[]) {
         // Get user email for email notifications
         let userEmail: string | undefined
         try {
@@ -182,7 +182,7 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
 
     // Update event type with latest detected
     const { error: updateError } = await client
-      .from('event_types')
+      .from('notification_event_types')
       .update({
         last_detected_event_id: latestEvent.id,
         last_detected_event_title: latestEvent.title,
@@ -206,7 +206,7 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
     const errorMessage = error instanceof Error ? error.message : String(error)
 
     await supabase
-      .from('event_types')
+      .from('notification_event_types')
       .update({
         last_check_at: new Date().toISOString(),
         last_check_status: 'error',
@@ -223,11 +223,11 @@ async function processEventType(eventType: EventType): Promise<{ eventsDetected:
  * Returns true if notification was sent successfully
  */
 async function notifySubscriber(
-  subscription: UserEventSubscription,
-  eventType: EventType,
+  subscription: UserNotificationSubscription,
+  eventType: NotificationEventType,
   event: DetectedEvent,
   userEmail?: string,
-  allSubscriptions?: UserEventSubscription[]
+  allSubscriptions?: UserNotificationSubscription[]
 ): Promise<boolean> {
   const client = supabase
 
@@ -256,7 +256,7 @@ async function notifySubscriber(
       .insert([
         {
           user_id: subscription.user_id,
-          event_type_id: eventType.id,
+          notification_event_type_id: eventType.id,
           detected_event_id: event.id,
           detected_event_title: event.title,
           detected_event_date: event.date,
@@ -305,7 +305,7 @@ async function sendNotifications(
     url: string
   },
   userEmail?: string,
-  subscriptions?: UserEventSubscription[]
+  subscriptions?: UserNotificationSubscription[]
 ) {
   const client = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
