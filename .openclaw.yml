@@ -1,0 +1,38 @@
+# 512Hockey Project Configuration
+# This file marks the directory as an OpenClaw workspace for the 512Hockey project
+
+name: 512Hockey
+description: The Pond Hockey Club event management app
+type: nextjs
+
+# Working directory for this project
+workdir: /home/node/.openclaw/workspace/projects/512hockey
+
+# Project metadata
+metadata:
+  owner: Ross Nanton
+  github: https://github.com/RosscoPecoTrain/512Hockey
+  deployed: https://512-hockey.vercel.app
+  created: 2026-04-24
+
+# Important paths
+paths:
+  source: ./
+  app: ./app
+  lib: ./lib
+  components: ./components
+  public: ./public
+  config: .env.local
+
+# Development
+dev:
+  port: 3000
+  command: npm run dev
+
+# Build
+build:
+  command: npm run build
+
+# Lint/test
+lint:
+  command: npm run lint
