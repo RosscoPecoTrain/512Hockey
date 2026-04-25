@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -23,14 +24,44 @@ interface JobLog {
 }
 
 export default function AdminJobsPage() {
+  const router = useRouter()
   const [logs, setLogs] = useState<JobLog[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [selectedLog, setSelectedLog] = useState<JobLog | null>(null)
   const [jobTypes, setJobTypes] = useState<string[]>([])
+
+  // Auth check on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        router.push('/auth/signin')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!profile?.is_admin) {
+        router.push('/')
+        return
+      }
+
+      setIsAdmin(true)
+      setAuthChecking(false)
+    }
+
+    checkAuth()
+  }, [router])
 
   const pageSize = 25
 
@@ -83,16 +114,18 @@ export default function AdminJobsPage() {
   }
 
   useEffect(() => {
+    if (!isAdmin) return
     fetchJobTypes()
-  }, [])
+  }, [isAdmin])
 
   useEffect(() => {
     setPage(0) // Reset to first page when filters change
   }, [jobTypeFilter, statusFilter])
 
   useEffect(() => {
+    if (!isAdmin) return
     fetchLogs()
-  }, [page, jobTypeFilter, statusFilter])
+  }, [page, jobTypeFilter, statusFilter, isAdmin])
 
   const statusColors = {
     success: 'text-green-600 bg-green-50',
@@ -101,6 +134,22 @@ export default function AdminJobsPage() {
   }
 
   const totalPages = Math.ceil(total / pageSize)
+
+  if (authChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Checking permissions...</p>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Access denied</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
