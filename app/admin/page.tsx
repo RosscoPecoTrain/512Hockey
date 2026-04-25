@@ -226,11 +226,21 @@ export default function AdminPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-[#0a1628] dark:text-[#e6edf3]">Admin Panel</h1>
-        {actionMsg && (
-          <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-4 py-2 rounded-lg text-sm font-medium">
-            {actionMsg}
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          <a
+            href="/admin/jobs"
+            className="px-4 py-2 bg-[#4fc3f7] text-[#0a1628] font-semibold rounded-lg hover:bg-[#0288d1] transition"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ⚙️ Job Logs
+          </a>
+          {actionMsg && (
+            <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-4 py-2 rounded-lg text-sm font-medium">
+              {actionMsg}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
