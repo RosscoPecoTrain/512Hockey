@@ -65,7 +65,7 @@ export default function JobsPage() {
   const [loadingLogs, setLoadingLogs] = useState(true)
   const [logPage, setLogPage] = useState(0)
   const [logTotal, setLogTotal] = useState(0)
-  const [jobTypeFilter, setJobTypeFilter] = useState<string>('')
+  const [jobNameFilter, setJobNameFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [jobTypes, setJobTypes] = useState<string[]>([])
 
@@ -133,8 +133,8 @@ export default function JobsPage() {
           .from('job_logs')
           .select('*', { count: 'exact' })
 
-        if (jobTypeFilter) {
-          query = query.eq('job_type', jobTypeFilter)
+        if (jobNameFilter) {
+          query = query.eq('job_name', jobNameFilter)
         }
 
         if (statusFilter) {
@@ -157,29 +157,29 @@ export default function JobsPage() {
     }
 
     fetchLogs()
-  }, [isAdmin, tab, logPage, jobTypeFilter, statusFilter])
+  }, [isAdmin, tab, logPage, jobNameFilter, statusFilter])
 
-  // Fetch unique job types for logs filter
+  // Fetch unique job names for logs filter
   useEffect(() => {
     if (!isAdmin || tab !== 'logs') return
 
-    const fetchJobTypes = async () => {
+    const fetchJobNames = async () => {
       try {
         const { data, error } = await supabase
           .from('job_logs')
-          .select('job_type', { count: 'exact' })
+          .select('job_name', { count: 'exact' })
           .distinct()
 
         if (error) throw error
 
-        const types = data?.map((d) => d.job_type) || []
-        setJobTypes(types.sort())
+        const names = data?.map((d) => d.job_name) || []
+        setJobTypes(names.sort())
       } catch (error) {
-        console.error('Failed to fetch job types:', error)
+        console.error('Failed to fetch job names:', error)
       }
     }
 
-    fetchJobTypes()
+    fetchJobNames()
   }, [isAdmin, tab])
 
   // Load logs for selected job
@@ -519,17 +519,17 @@ export default function JobsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Job Type
+                      Job Name
                     </label>
                     <select
-                      value={jobTypeFilter}
+                      value={jobNameFilter}
                       onChange={(e) => {
-                        setJobTypeFilter(e.target.value)
+                        setJobNameFilter(e.target.value)
                         setLogPage(0)
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     >
-                      <option value="">All Types</option>
+                      <option value="">All Jobs</option>
                       {jobTypes.map((type) => (
                         <option key={type} value={type}>
                           {type}
