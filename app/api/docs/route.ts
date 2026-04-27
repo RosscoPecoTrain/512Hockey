@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return OpenAPI spec
-    return NextResponse.json(openApiSpec)
+    return NextResponse.json(getOpenAPISpec())
   } catch (error) {
     console.error('Error in /api/docs:', error)
     return NextResponse.json(
@@ -52,328 +52,155 @@ export async function GET(request: NextRequest) {
   }
 }
 
-const openApiSpec = {
-  openapi: '3.0.0',
-  info: {
-    title: '512 Hockey API',
-    description: 'API documentation for 512 Hockey platform',
-    version: '1.0.0',
-    contact: {
-      name: 'API Support',
-      email: 'support@512hockey.com'
-    }
-  },
-  servers: [
-    {
-      url: '/api',
-      description: 'API Server'
-    }
-  ],
-  paths: {
-    '/admin/jobs/run': {
-      post: {
-        summary: 'Run an admin job',
-        description: 'Manually trigger a scheduled job (e.g., scrape rink events)',
-        tags: ['Admin Jobs'],
-        operationId: 'runJob',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  job_id: {
-                    type: 'string',
-                    description: 'ID of the job to run',
-                    example: 'scrape_rink_events'
-                  }
-                },
-                required: ['job_id']
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: 'Job executed successfully',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                    data: { type: 'object' }
-                  }
-                }
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          403: {
-            description: 'Forbidden - Admin access required'
-          }
-        }
-      }
-    },
-    '/events/types': {
-      get: {
-        summary: 'Get event types',
-        description: 'Retrieve available event types',
-        tags: ['Events'],
-        operationId: 'getEventTypes',
-        responses: {
-          200: {
-            description: 'List of event types',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      name: { type: 'string' },
-                      description: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    '/events/subscriptions': {
-      get: {
-        summary: 'List subscriptions',
-        description: 'Get all event subscriptions for the current user',
-        tags: ['Events'],
-        operationId: 'getSubscriptions',
-        responses: {
-          200: {
-            description: 'List of subscriptions',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      user_id: { type: 'string' },
-                      event_type: { type: 'string' },
-                      created_at: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          }
-        }
+function getOpenAPISpec() {
+  return {
+    openapi: '3.0.0',
+    info: {
+      title: '512 Hockey API',
+      description: 'API documentation for 512 Hockey platform',
+      version: '1.0.0',
+      contact: {
+        name: 'API Support',
+        email: 'support@512hockey.com',
       },
-      post: {
-        summary: 'Create subscription',
-        description: 'Subscribe to a specific event type',
-        tags: ['Events'],
-        operationId: 'createSubscription',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  event_type: {
-                    type: 'string',
-                    description: 'Type of event to subscribe to',
-                    example: 'hockey_drop_in'
-                  }
-                },
-                required: ['event_type']
-              }
-            }
-          }
-        },
-        responses: {
-          201: {
-            description: 'Subscription created'
-          },
-          401: {
-            description: 'Unauthorized'
-          }
-        }
-      }
     },
-    '/events/subscriptions/{id}': {
-      delete: {
-        summary: 'Delete subscription',
-        description: 'Unsubscribe from an event type',
-        tags: ['Events'],
-        operationId: 'deleteSubscription',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
+    servers: [
+      {
+        url: '/api',
+        description: 'API Server',
+      },
+    ],
+    paths: {
+      '/admin/jobs/run': {
+        post: {
+          summary: 'Run an admin job',
+          description: 'Manually trigger a scheduled job',
+          tags: ['Admin Jobs'],
+          requestBody: {
             required: true,
-            schema: { type: 'string' },
-            description: 'Subscription ID'
-          }
-        ],
-        responses: {
-          200: {
-            description: 'Subscription deleted'
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          404: {
-            description: 'Subscription not found'
-          }
-        }
-      }
-    },
-    '/events/check-new-postings': {
-      post: {
-        summary: 'Check for new event postings',
-        description: 'Trigger a check for new hockey drop-in events',
-        tags: ['Events'],
-        operationId: 'checkNewPostings',
-        responses: {
-          200: {
-            description: 'Check completed',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    new_events: { type: 'integer' },
-                    updated_events: { type: 'integer' },
-                    timestamp: { type: 'string', format: 'date-time' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    '/events/notifications': {
-      get: {
-        summary: 'Get notifications',
-        description: 'Retrieve user notifications for new events',
-        tags: ['Events'],
-        operationId: 'getNotifications',
-        parameters: [
-          {
-            name: 'limit',
-            in: 'query',
-            schema: { type: 'integer', default: 20 },
-            description: 'Number of notifications to return'
+                    job_id: {
+                      type: 'string',
+                      description: 'ID of the job to run',
+                    },
+                  },
+                  required: ['job_id'],
+                },
+              },
+            },
           },
-          {
-            name: 'offset',
-            in: 'query',
-            schema: { type: 'integer', default: 0 },
-            description: 'Pagination offset'
-          }
-        ],
-        responses: {
-          200: {
-            description: 'List of notifications',
+          responses: {
+            200: {
+              description: 'Job executed successfully',
+            },
+            401: {
+              description: 'Unauthorized',
+            },
+            403: {
+              description: 'Forbidden - Admin access required',
+            },
+          },
+        },
+      },
+      '/admin/api-keys': {
+        get: {
+          summary: 'List API keys',
+          description: 'Get all API keys for the current user',
+          tags: ['API Keys'],
+          responses: {
+            200: {
+              description: 'List of API keys',
+            },
+            401: {
+              description: 'Unauthorized',
+            },
+          },
+        },
+        post: {
+          summary: 'Create API key',
+          description: 'Create a new API key with scopes and rate limits',
+          tags: ['API Keys'],
+          requestBody: {
+            required: true,
             content: {
               'application/json': {
                 schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      event_type: { type: 'string' },
-                      message: { type: 'string' },
-                      read: { type: 'boolean' },
-                      created_at: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: 'string',
+                      description: 'Key name',
+                    },
+                    scopes: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                      description: 'Permissions for this key',
+                    },
+                    rate_limit_requests: {
+                      type: 'integer',
+                      default: 100,
+                    },
+                    rate_limit_window_seconds: {
+                      type: 'integer',
+                      default: 60,
+                    },
+                  },
+                  required: ['name'],
+                },
+              },
+            },
           },
-          401: {
-            description: 'Unauthorized'
-          }
-        }
-      }
+          responses: {
+            201: {
+              description: 'API key created',
+            },
+            401: {
+              description: 'Unauthorized',
+            },
+          },
+        },
+      },
+      '/notifications/types': {
+        get: {
+          summary: 'Get event types',
+          description: 'Retrieve available event types',
+          tags: ['Events'],
+          responses: {
+            200: {
+              description: 'List of event types',
+            },
+          },
+        },
+      },
     },
-    '/admin/users': {
-      get: {
-        summary: 'List users',
-        description: 'Get all users (admin only)',
-        tags: ['Admin Users'],
-        operationId: 'listUsers',
-        parameters: [
-          {
-            name: 'limit',
-            in: 'query',
-            schema: { type: 'integer', default: 50 },
-            description: 'Number of users to return'
-          },
-          {
-            name: 'offset',
-            in: 'query',
-            schema: { type: 'integer', default: 0 },
-            description: 'Pagination offset'
-          }
-        ],
-        responses: {
-          200: {
-            description: 'List of users',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      full_name: { type: 'string' },
-                      email: { type: 'string' },
-                      is_admin: { type: 'boolean' },
-                      is_banned: { type: 'boolean' },
-                      is_enabled: { type: 'boolean' },
-                      created_at: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          403: {
-            description: 'Forbidden - Admin access required'
-          }
-        }
-      }
-    }
-  },
-  components: {
-    securitySchemes: {
-      cookieAuth: {
-        type: 'apiKey',
-        in: 'cookie',
-        name: 'sb-access-token',
-        description: 'Supabase authentication token (automatic via cookies)'
-      }
-    }
-  },
-  security: [
-    {
-      cookieAuth: []
-    }
-  ]
+    components: {
+      securitySchemes: {
+        apiKey: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+          description: 'API Key: Bearer sk_...',
+        },
+        cookieAuth: {
+          type: 'apiKey',
+          name: 'sb-access-token',
+          in: 'cookie',
+        },
+      },
+    },
+    security: [
+      {
+        apiKey: [],
+      },
+      {
+        cookieAuth: [],
+      },
+    ],
+  }
 }
