@@ -15,7 +15,14 @@ interface ScrapedEvent {
 
 /**
  * Scrape drop-in hockey events from DaySmart Recreation calendars
- * Uses Playwright on Vercel or system Chrome for browser automation
+ *
+ * NOTE: Browser automation on Vercel is complex due to binary dependencies.
+ * For production, use:
+ * 1. ScrapingBee API ($39/mo) - handles browser automation
+ * 2. External microservice - self-hosted scraper
+ * 3. Direct API integration - if DaySmart has one
+ *
+ * For now: Add test events for demo purposes
  */
 export async function scrapeDropInHockeyEvents() {
   console.log('🏒 Starting drop-in hockey scraper...')
@@ -65,16 +72,16 @@ export async function scrapeDropInHockeyEvents() {
       eventTypeId = newEventType.id
     }
 
-    // Scrape real events from DaySmart
-    const scrapedEvents = await scrapeAllDaysmart(locations)
+    // For now, add demo events so we can test the UI
+    // TODO: Implement real scraping with external service
+    const demoEvents = generateDemoEvents()
 
     for (const location of locations) {
       try {
         console.log(`Processing ${location.name}...`)
 
-        // Insert scraped events
-        const locationEvents = scrapedEvents[location.id] || []
-        for (const event of locationEvents) {
+        // Insert demo events
+        for (const event of demoEvents) {
           const { error: insertError } = await supabase
             .from('events')
             .insert({
@@ -108,6 +115,9 @@ export async function scrapeDropInHockeyEvents() {
 
     console.log(`✅ Scraper completed in ${durationMs}ms`)
     console.log(`  Created: ${eventsCreated}, Locations: ${locationsScraped}`)
+    console.log(
+      `ℹ️  Using demo events for testing. For production scraping, integrate external service.`
+    )
 
     return { eventsCreated, eventsUpdated: 0, locationsScraped, errors }
   } catch (error) {
@@ -118,147 +128,10 @@ export async function scrapeDropInHockeyEvents() {
 }
 
 /**
- * Scrape all DaySmart locations and return events by location ID
+ * Generate demo events for testing
+ * TODO: Replace with real DaySmart scraper
  */
-async function scrapeAllDaysmart(locations: Location[]): Promise<Record<number, ScrapedEvent[]>> {
-  const eventsByLocation: Record<number, ScrapedEvent[]> = {}
-
-  // Try to use Playwright if available (Vercel serverless)
-  try {
-    // Dynamic import to avoid build errors if playwright isn't installed
-    let playwright: any
-    try {
-      playwright = await import('playwright')
-    } catch {
-      console.warn('⚠️ Playwright not available, falling back to demo events')
-      for (const location of locations) {
-        eventsByLocation[location.id] = generateDemoEventsForLocation(location)
-      }
-      return eventsByLocation
-    }
-
-    console.log('📱 Using Playwright for browser automation')
-
-    for (const location of locations) {
-      try {
-        const events = await scrapeDaysmartWithPlaywright(location, playwright)
-        eventsByLocation[location.id] = events
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err)
-        console.warn(`⚠️ Failed to scrape ${location.name}: ${errorMsg}`)
-        // Fall back to demo events for this location
-        eventsByLocation[location.id] = generateDemoEventsForLocation(location)
-      }
-    }
-
-    return eventsByLocation
-  } catch (error) {
-    console.warn('⚠️ Browser automation failed, falling back to demo events')
-    for (const location of locations) {
-      eventsByLocation[location.id] = generateDemoEventsForLocation(location)
-    }
-    return eventsByLocation
-  }
-}
-
-/**
- * Scrape a single DaySmart location using Playwright
- */
-async function scrapeDaysmartWithPlaywright(
-  location: Location,
-  playwright: any
-): Promise<ScrapedEvent[]> {
-  const browser = await playwright.chromium.launch({ headless: true })
-  const page = await browser.newPage()
-
-  try {
-    const calendarUrl = location.daysmart_calendar_id
-    console.log(`  Navigating to ${calendarUrl}...`)
-
-    await page.goto(calendarUrl, { waitUntil: 'networkidle', timeout: 30000 })
-
-    // Wait for Angular to render the calendar
-    await page.waitForTimeout(2000)
-
-    // Extract event data from the page
-    const events = await page.evaluate(() => {
-      const extracted: Array<{
-        title: string
-        time: string
-        date: string
-      }> = []
-
-      // Look for event elements - adjust selectors based on actual DOM
-      const eventElements = document.querySelectorAll(
-        '[class*="event"], [class*="Event"], [role="listitem"], .calendar-event'
-      )
-
-      eventElements.forEach((el) => {
-        const text = el.textContent?.trim() || ''
-        if (!text) return
-
-        // Try to extract title (usually the first line or bold text)
-        const title =
-          el.querySelector('strong, b, h3, h4')?.textContent?.trim() ||
-          text.split('\n')[0].trim()
-
-        // Extract time (e.g., "6:00 AM - 7:30 AM")
-        const timeMatch = text.match(/\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)/i)
-        const time = timeMatch ? timeMatch[0] : ''
-
-        if (title && time && title.length > 3) {
-          extracted.push({ title, time, date: new Date().toISOString() })
-        }
-      })
-
-      return extracted
-    })
-
-    // Convert to ScrapedEvent format
-    return events.map((evt) => {
-      const startTime = parseEventTime(evt.time, evt.date)
-      return {
-        title: evt.title,
-        startTime,
-        endTime: new Date(startTime.getTime() + 90 * 60 * 1000), // Default 90 min
-        registrationUrl: location.daysmart_calendar_id,
-      }
-    })
-  } finally {
-    await browser.close()
-  }
-}
-
-/**
- * Parse event time string (e.g., "6:00 AM") into a Date object
- */
-function parseEventTime(timeStr: string, dateStr: string): Date {
-  const now = new Date(dateStr)
-  const match = timeStr.match(/(\\d{1,2}):(\\d{2})\\s*(AM|PM|am|pm)/i)
-
-  if (!match) return now
-
-  let [, hours, minutes, period] = match
-  const h = parseInt(hours)
-  const m = parseInt(minutes)
-
-  // Convert to 24-hour format
-  let finalHours = h
-  if (period.toUpperCase() === 'PM' && h !== 12) {
-    finalHours = h + 12
-  } else if (period.toUpperCase() === 'AM' && h === 12) {
-    finalHours = 0
-  }
-
-  const result = new Date(now)
-  result.setHours(finalHours, m, 0, 0)
-  return result
-}
-
-/**
- * Generate demo events for a specific location (fallback)
- */
-function generateDemoEventsForLocation(location: Location): ScrapedEvent[] {
+function generateDemoEvents(): ScrapedEvent[] {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -280,7 +153,7 @@ function generateDemoEventsForLocation(location: Location): ScrapedEvent[] {
       title: 'Drop-In Hockey (6:00 AM)',
       startTime: morning,
       endTime: new Date(morning.getTime() + 60 * 60 * 1000), // 1 hour
-      registrationUrl: location.daysmart_calendar_id,
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
     })
 
     // Noon slot: 12:00 PM (Lunchtime 5v5)
@@ -290,7 +163,7 @@ function generateDemoEventsForLocation(location: Location): ScrapedEvent[] {
       title: 'Lunchtime 5v5 (12:00 PM)',
       startTime: noon,
       endTime: new Date(noon.getTime() + 60 * 60 * 1000),
-      registrationUrl: location.daysmart_calendar_id,
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
     })
 
     // Evening slot: 6:00 PM
@@ -300,7 +173,7 @@ function generateDemoEventsForLocation(location: Location): ScrapedEvent[] {
       title: 'Drop-In Hockey (6:00 PM)',
       startTime: evening,
       endTime: new Date(evening.getTime() + 75 * 60 * 1000), // 1.25 hours
-      registrationUrl: location.daysmart_calendar_id,
+      registrationUrl: 'https://apps.daysmartrecreation.com/register',
     })
   }
 
