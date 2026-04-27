@@ -79,7 +79,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, scopes = [], description, expires_at } = body
+    const {
+      name,
+      scopes = [],
+      description,
+      expires_at,
+      rate_limit_requests = 100,
+      rate_limit_window_seconds = 60,
+      ip_whitelist = null,
+    } = body
 
     if (!name) {
       return NextResponse.json(
@@ -122,6 +130,9 @@ export async function POST(request: NextRequest) {
         scopes,
         description,
         expires_at,
+        rate_limit_requests,
+        rate_limit_window_seconds,
+        ip_whitelist,
       })
 
     if (insertError) {
