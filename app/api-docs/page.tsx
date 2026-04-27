@@ -209,6 +209,11 @@ export default function ApiDocsPage() {
           showRequestHeaders={true}
           supportedSubmitMethods={['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']}
           tryItOutEnabled={true}
+          requestInterceptor={(request) => {
+            // Ensure cookies are sent with the request
+            request.credentials = 'include'
+            return request
+          }}
         />
       </div>
 
