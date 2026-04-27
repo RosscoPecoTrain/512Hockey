@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  daysmart-scraper:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+    container_name: 512hockey-daysmart-scraper
+    restart: unless-stopped
+    environment:
+      # Supabase credentials
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      
+      # DaySmart calendar URL to scrape
+      DAYSMART_URL: ${DAYSMART_URL:-https://www.daysmart.com/calendar}
+      
+      # Scraping schedule (cron format)
+      # "0 */6 * * *" = every 6 hours
+      # "0 7,12,18 * * *" = 7 AM, noon, 6 PM daily
+      SCRAPE_SCHEDULE: ${SCRAPE_SCHEDULE:-0 */6 * * *}
+      
+      # Optional: headless browser flags
+      HEADLESS: "true"
+      NO_SANDBOX: "true"
+    volumes:
+      # Optional: persist Chrome cache
+      - chrome-cache:/home/pptruser/.cache
+    networks:
+      - 512hockey
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  chrome-cache:
+    driver: local
+
+networks:
+  512hockey:
+    driver: bridge
