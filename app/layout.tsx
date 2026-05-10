@@ -25,6 +25,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: '512Hockey.com - Austin Hockey Community',
   description: 'Connect with hockey players in Austin, find games, and discover local rinks',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

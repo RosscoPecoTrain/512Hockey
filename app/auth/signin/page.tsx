@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://512-hockey.vercel.app'
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 type Mode = 'signin' | 'signup'
 
